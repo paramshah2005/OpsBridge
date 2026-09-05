@@ -1,6 +1,6 @@
 # OpsBridge — M1
 
-M1 provides GitHub OAuth login and a live repository picker. Selecting a repository currently lands on a small M1 completion screen; the per-repository chatroom is intentionally reserved for M2.
+M1 provides GitHub OAuth login and a live repository picker. M2 adds a persistent per-repository chatroom backed by Neon.
 
 ## Local setup
 
@@ -24,4 +24,4 @@ The current OAuth scope is `read:user repo` so the picker can show repositories 
 
 ## Neon setup for M2
 
-Create a Neon project, copy its pooled connection string into `DATABASE_URL`, then run the SQL in `db/schema.sql` from Neon’s SQL Editor. The chat API will then persist messages per GitHub repository.
+Create a Neon project, copy its pooled connection string into `DATABASE_URL`, then run the SQL in `db/schema.sql` from Neon’s SQL Editor. The chat API persists messages per GitHub repository at `/repos/[repo-id]/chat`.
