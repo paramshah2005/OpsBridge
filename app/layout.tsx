@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import "./chat.css";
 
 export const metadata: Metadata = {
   title: "OpsBridge — Your GitHub control plane",
