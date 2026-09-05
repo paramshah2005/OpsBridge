@@ -58,7 +58,7 @@ export default function RepoPicker({ session }: { session: Session }) {
             </p>
             <h1>Your repositories.</h1>
             <p className="section-lede">
-              Choose a repository to begin your OpsBridge workspace.
+              Choose a repository to open its workspace.
             </p>
           </div>
           <div className="repo-count">
@@ -102,7 +102,7 @@ export default function RepoPicker({ session }: { session: Session }) {
         ) : (
           <div className="repo-grid">
             {filtered.map((repo) => (
-              <a className="repo-card" href={`/repos/${repo.id}`} key={repo.id}>
+              <a className="repo-card" href={`/repos/${repo.id}/chat`} key={repo.id}>
                 <div className="repo-card-top">
                   <span className="repo-symbol">◈</span>
                   <span className="visibility">
@@ -128,8 +128,7 @@ export default function RepoPicker({ session }: { session: Session }) {
           </div>
         )}
         <p className="phase-note">
-          <span>✦</span> Repository connections are coming in the next
-          milestone. For now, select a repo to preview its workspace.
+          <span>✦</span> Select a repository to enter its persistent chatroom.
         </p>
       </section>
     </main>
