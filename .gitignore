@@ -5,3 +5,4 @@ out/
 !.env.example
 .vercel/
 npm-debug.log*
+README_dev.md
