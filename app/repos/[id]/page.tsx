@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import { getSession } from "../../lib/session";
+
 export default async function RepoPreview({
   params,
 }: {
@@ -19,19 +20,19 @@ export default async function RepoPreview({
       </nav>
       <section className="coming">
         <p className="eyebrow">
-          <span className="pulse" /> WORKSPACE PREVIEW
+          <span className="pulse" /> REPOSITORY WORKSPACE
         </p>
         <h1>
-          Repo connected.
+          Ready to talk
           <br />
-          <em>Chat arrives in M2.</em>
+          <em>about your repo.</em>
         </h1>
         <p>
-          This repository is ready for the next milestone. The live GitHub repo
-          picker is working end to end.
+          Your persistent repository chat is ready. Messages are stored in Neon
+          and scoped to this repository.
         </p>
-        <a className="text-link" href="/repos">
-          Return to repositories ↗
+        <a className="github-button" href={`/repos/${params.id}/chat`}>
+          Open chatroom <span className="arrow">↗</span>
         </a>
       </section>
     </main>

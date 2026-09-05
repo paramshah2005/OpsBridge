@@ -21,3 +21,7 @@ Open `http://localhost:3000` and choose **Sign in with GitHub**.
 Import this repository into Vercel. Add the same environment variables with `NEXT_PUBLIC_APP_URL` set to the deployed HTTPS URL. Update the GitHub OAuth App callback URL to `https://your-domain.vercel.app/api/auth/github/callback`. Every push to the connected GitHub repository will then trigger a Vercel deployment.
 
 The current OAuth scope is `read:user repo` so the picker can show repositories owned by the signed-in user, including private repositories. The GitHub token is stored only in an encrypted, HttpOnly cookie and is never exposed to browser JavaScript.
+
+## Neon setup for M2
+
+Create a Neon project, copy its pooled connection string into `DATABASE_URL`, then run the SQL in `db/schema.sql` from Neon’s SQL Editor. The chat API will then persist messages per GitHub repository.
