@@ -58,7 +58,7 @@ export function createSession(user: Session) {
   return `${payload}.${signature}`;
 }
 
-export async function getSession(cookieStore?: ReturnType<typeof nextCookies>) {
+export async function getSession(cookieStore?: ReturnType<typeof nextCookies> | Awaited<ReturnType<typeof nextCookies>>) {
   const value = (await cookieStore)?.get(SESSION_COOKIE)?.value;
   if (!value) return null;
   const [payload, signature] = value.split(".");

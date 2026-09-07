@@ -9,7 +9,6 @@ export function GET() {
     let repoId: string | null = null;
     const socket = ws as unknown as RoomSocket;
     const cleanup = () => { if (repoId) leaveRoom(repoId, socket); };
-
     ws.on("message", (data: WebSocketData) => {
       try {
         const event = JSON.parse(data.toString()) as { type?: string; repoId?: string };
