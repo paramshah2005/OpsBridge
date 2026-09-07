@@ -23,11 +23,14 @@ export async function GET() {
       next: { revalidate: 60 },
     },
   );
-  if (!response.ok)
-    return NextResponse.json(
-      { error: "Unable to load repositories from GitHub" },
+  if (!response.ok) {
+    const errorResponse = NextResponse.json(
+      { error: response.status === 401 ? "Your GitHub session expired. Please sign in again." : "Unable to load repositories from GitHub" },
       { status: response.status },
     );
+    if (response.status === 401) { errorResponse.cookies.delete("opsbridge_session"); errorResponse.cookies.delete("github_access_token"); }
+    return errorResponse;
+  }
   const repos = await response.json();
   return NextResponse.json(
     repos.map((repo: Record<string, unknown>) => ({

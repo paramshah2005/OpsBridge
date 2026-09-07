@@ -93,6 +93,7 @@ export default function RepoPicker({ session }: { session: Session }) {
             <strong>Couldn’t load repositories</strong>
             <span>{error}</span>
             <button onClick={() => location.reload()}>Try again</button>
+            <a className="text-link" href="/api/auth/logout">Sign in again</a>
           </div>
         ) : filtered.length === 0 ? (
           <div className="state-card">
