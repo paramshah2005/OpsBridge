@@ -3,9 +3,10 @@ import { cookies } from "next/headers";
 import { decryptAccessToken, getSession } from "../../lib/session";
 
 export async function GET() {
-  if (!(await getSession(cookies())))
+  const cookieStore = await cookies();
+  if (!(await getSession(cookieStore)))
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  const encryptedToken = cookies().get("github_access_token")?.value;
+  const encryptedToken = cookieStore.get("github_access_token")?.value;
   const token = encryptedToken ? decryptAccessToken(encryptedToken) : null;
   if (!token)
     return NextResponse.json(
