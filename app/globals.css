@@ -537,11 +537,17 @@ body {
 
 /* Repository activity uses compact feed styling rather than chat-message styling. */
 .bot-feed {
-  max-height: 265px;
-  overflow-y: auto;
+  height: 282px;
+  overflow: hidden;
   margin-top: 18px;
   padding-top: 14px;
   border-top: 1px solid #e5e9df;
+}
+
+.bot-stack {
+  position: relative;
+  height: 238px;
+  margin: 12px 2px 0;
 }
 
 .bot-empty {
@@ -550,21 +556,47 @@ body {
 }
 
 .bot-message {
-  padding: 11px 0;
-  border-bottom: 1px solid #e8ebe5;
+  position: absolute;
+  inset: 0;
+  height: 62px;
+  padding: 10px 11px;
+  overflow: hidden;
+  background: #fff;
+  border: 1px solid #e1e6de;
+  border-radius: 8px;
+  box-shadow: 0 5px 12px rgba(30, 45, 28, 0.08);
+  transform: translateY(var(--stack-offset)) scale(var(--stack-scale));
+  transform-origin: top center;
+  opacity: var(--stack-opacity);
+  transition: transform 280ms ease, opacity 280ms ease, box-shadow 280ms ease;
 }
 
-.bot-message:last-child {
-  border-bottom: 0;
+.bot-message:first-child {
+  z-index: 4;
+  box-shadow: 0 9px 20px rgba(30, 45, 28, 0.14);
 }
+
+.bot-message:nth-child(2) { z-index: 3; }
+.bot-message:nth-child(3) { z-index: 2; }
+.bot-message:nth-child(4) { z-index: 1; }
 
 .bot-message p {
-  margin: 0 0 5px !important;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  margin: 0 0 4px !important;
   color: #4e584e !important;
-  font: 12px/1.55 "DM Sans", sans-serif !important;
+  font: 11px/1.35 "DM Sans", sans-serif !important;
 }
 
 .bot-message time {
   color: #8a9389;
   font: 10px "DM Mono", monospace;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bot-message {
+    transition: none;
+  }
 }
