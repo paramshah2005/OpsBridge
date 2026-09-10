@@ -31,7 +31,6 @@ export async function POST(request: Request, { params }: Params) {
     const db = getDb();
     const rows = await db`INSERT INTO messages (github_repo_id, author_login, content) VALUES (${repoId}, ${session.login}, ${content}) RETURNING id, github_repo_id AS "repoId", author_login AS "authorLogin", content, message_type AS "messageType", created_at AS "createdAt"`;
     broadcastToRoom(String(repoId), { type: "message", message: rows[0] });
-    broadcastToRoom(String(repoId), { type: "message", message: rows[0] });
     return NextResponse.json(rows[0], { status: 201 });
   } catch (error) { console.error("Failed to save message", error); return NextResponse.json({ error: "Unable to save message. Check your Neon schema and DATABASE_URL." }, { status: 500 }); }
 }
