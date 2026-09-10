@@ -14,7 +14,7 @@ export async function GET() {
       { status: 401 },
     );
   const response = await fetch(
-    "https://api.github.com/user/repos?sort=updated&per_page=100&affiliation=owner",
+    "https://api.github.com/user/repos?sort=updated&per_page=100&affiliation=owner,collaborator,organization_member",
     {
       headers: {
         Authorization: `Bearer ${token}`,
