@@ -31,19 +31,19 @@ export function normalizeWebhookEvent(eventName: string, payload: Payload): Norm
   const prTitle = text(pullRequest.title);
 
   if (eventName === "pull_request" && action === "opened" && prNumber && actorLogin)
-    return { action, actorLogin, pullRequestNumber: prNumber, pullRequestTitle: prTitle, branchName: null, commitCount: null, occurredAt, message: `🔵 PR #${prNumber} opened by @${actorLogin}${prTitle ? `: “${prTitle}”` : ""}` };
+    return { action, actorLogin, pullRequestNumber: prNumber, pullRequestTitle: prTitle, branchName: null, commitCount: null, occurredAt, message: `Pull request #${prNumber} opened by @${actorLogin}${prTitle ? `: “${prTitle}”` : ""}` };
   if (eventName === "pull_request" && action === "closed" && prNumber) {
     const merged = pullRequest.merged === true;
-    return { action, actorLogin, pullRequestNumber: prNumber, pullRequestTitle: prTitle, branchName: null, commitCount: null, occurredAt, message: merged ? `🟣 PR #${prNumber} merged${prTitle ? `: “${prTitle}”` : ""}` : `⚪ PR #${prNumber} closed without merging${prTitle ? `: “${prTitle}”` : ""}` };
+    return { action, actorLogin, pullRequestNumber: prNumber, pullRequestTitle: prTitle, branchName: null, commitCount: null, occurredAt, message: merged ? `Pull request #${prNumber} merged${prTitle ? `: “${prTitle}”` : ""}` : `Pull request #${prNumber} closed without merging${prTitle ? `: “${prTitle}”` : ""}` };
   }
   if (eventName === "push") {
     const ref = text(payload.ref)?.replace(/^refs\/heads\//, "") || null;
     const commits = Array.isArray(payload.commits) ? payload.commits.length : 0;
-    return { action, actorLogin: text(object(payload.pusher).name) || actorLogin, pullRequestNumber: null, pullRequestTitle: null, branchName: ref, commitCount: commits, occurredAt, message: `📦 ${commits} new commit${commits === 1 ? "" : "s"} pushed to ${ref || "a branch"}${actorLogin ? ` by @${actorLogin}` : ""}` };
+    return { action, actorLogin: text(object(payload.pusher).name) || actorLogin, pullRequestNumber: null, pullRequestTitle: null, branchName: ref, commitCount: commits, occurredAt, message: `${commits} new commit${commits === 1 ? "" : "s"} pushed to ${ref || "a branch"}${actorLogin ? ` by @${actorLogin}` : ""}` };
   }
   if ((eventName === "create" || eventName === "delete") && text(payload.ref_type) === "branch") {
     const branchName = text(payload.ref);
-    return { action, actorLogin, pullRequestNumber: null, pullRequestTitle: null, branchName, commitCount: null, occurredAt, message: `${eventName === "create" ? "🌱 New branch" : "🗑️ Branch"} ${branchName || ""} ${eventName === "create" ? "created" : "deleted"}${actorLogin ? ` by @${actorLogin}` : ""}` };
+    return { action, actorLogin, pullRequestNumber: null, pullRequestTitle: null, branchName, commitCount: null, occurredAt, message: `Branch ${branchName || ""} ${eventName === "create" ? "created" : "deleted"}${actorLogin ? ` by @${actorLogin}` : ""}` };
   }
   return { action, actorLogin, pullRequestNumber: prNumber, pullRequestTitle: prTitle, branchName: null, commitCount: null, occurredAt, message: null };
 }
