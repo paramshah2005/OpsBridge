@@ -534,3 +534,37 @@ body {
     font-size: 52px;
   }
 }
+
+/* Repository activity uses compact feed styling rather than chat-message styling. */
+.bot-feed {
+  max-height: 265px;
+  overflow-y: auto;
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid #e5e9df;
+}
+
+.bot-empty {
+  margin: 10px 0 0 !important;
+  color: #788278 !important;
+}
+
+.bot-message {
+  padding: 11px 0;
+  border-bottom: 1px solid #e8ebe5;
+}
+
+.bot-message:last-child {
+  border-bottom: 0;
+}
+
+.bot-message p {
+  margin: 0 0 5px !important;
+  color: #4e584e !important;
+  font: 12px/1.55 "DM Sans", sans-serif !important;
+}
+
+.bot-message time {
+  color: #8a9389;
+  font: 10px "DM Mono", monospace;
+}
