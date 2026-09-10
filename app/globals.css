@@ -546,7 +546,7 @@ body {
 
 .bot-stack {
   position: relative;
-  height: 238px;
+  height: 244px;
   margin: 12px 2px 0;
 }
 
@@ -558,7 +558,8 @@ body {
 .bot-message {
   position: absolute;
   inset: 0;
-  height: 62px;
+  box-sizing: border-box;
+  height: 88px;
   padding: 10px 11px;
   overflow: hidden;
   background: #fff;
@@ -572,13 +573,14 @@ body {
 }
 
 .bot-message:first-child {
+  --stack-offset: 0px !important;
   z-index: 4;
   box-shadow: 0 9px 20px rgba(30, 45, 28, 0.14);
 }
 
-.bot-message:nth-child(2) { z-index: 3; }
-.bot-message:nth-child(3) { z-index: 2; }
-.bot-message:nth-child(4) { z-index: 1; }
+.bot-message:nth-child(2) { --stack-offset: 56px !important; z-index: 3; }
+.bot-message:nth-child(3) { --stack-offset: 112px !important; z-index: 2; }
+.bot-message:nth-child(4) { --stack-offset: 168px !important; z-index: 1; }
 
 .bot-message p {
   display: -webkit-box;
@@ -591,8 +593,17 @@ body {
 }
 
 .bot-message time {
+  position: absolute;
+  left: 11px;
+  bottom: 9px;
   color: #8a9389;
   font: 10px "DM Mono", monospace;
+}
+
+@media (max-width: 560px) {
+  .bot-feed { height: 294px; }
+  .bot-stack { height: 250px; }
+  .bot-message { height: 96px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
