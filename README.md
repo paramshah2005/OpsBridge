@@ -10,7 +10,7 @@ Users sign in with GitHub, select a repository, and work from its dedicated live
 - Live repository discovery from the GitHub API
 - A dedicated chatroom for every repository
 - Persistent messages backed by Neon PostgreSQL
-- Instant two-way realtime communication through WebSockets
+- Instant two-way realtime communication through WebSocket
 - GitHub webhook activity announcements
 - Trivy container vulnerability scanning
 - Semgrep static application security testing
