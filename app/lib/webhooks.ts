@@ -45,5 +45,25 @@ export function normalizeWebhookEvent(eventName: string, payload: Payload): Norm
     const branchName = text(payload.ref);
     return { action, actorLogin, pullRequestNumber: null, pullRequestTitle: null, branchName, commitCount: null, occurredAt, message: `Branch ${branchName || ""} ${eventName === "create" ? "created" : "deleted"}${actorLogin ? ` by @${actorLogin}` : ""}` };
   }
+  if (eventName === "workflow_run" && action === "completed") {
+    const run = object(payload.workflow_run);
+    const workflowName = text(run.name);
+    const conclusion = text(run.conclusion);
+    const branchName = text(run.head_branch);
+    const runActor = text(object(run.triggering_actor).login) || actorLogin;
+    const runOccurredAt = text(run.updated_at) || occurredAt;
+    const pullRequests = Array.isArray(run.pull_requests) ? run.pull_requests : [];
+    const runPrNumber = pullRequests.length ? number(object(pullRequests[0]).number) : null;
+    const outcome =
+      conclusion === "success" ? "passed" :
+      conclusion === "failure" ? "failed" :
+      conclusion === "cancelled" ? "was cancelled" :
+      conclusion === "skipped" ? "was skipped" :
+      conclusion === "timed_out" ? "timed out" :
+      conclusion === "action_required" ? "requires action" :
+      conclusion || "finished";
+    const target = runPrNumber ? `PR #${runPrNumber}` : branchName ? `branch ${branchName}` : null;
+    return { action, actorLogin: runActor, pullRequestNumber: runPrNumber, pullRequestTitle: null, branchName, commitCount: null, occurredAt: runOccurredAt, message: workflowName ? `${workflowName} ${outcome}${target ? ` on ${target}` : ""}` : null };
+  }
   return { action, actorLogin, pullRequestNumber: prNumber, pullRequestTitle: prTitle, branchName: null, commitCount: null, occurredAt, message: null };
 }
