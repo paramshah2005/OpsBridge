@@ -2,7 +2,7 @@
 
 OpsBridge is a GitHub-native DevSecOps collaboration platform. It combines repository conversations, GitHub activity, security gates, pull-request workflows, and engineering reports in one repository-scoped workspace.
 
-Users sign in with GitHub, select a repository, and work from its dedicated live chatroom. GitHub activity and security results appear as readable messages, while Neon PostgreSQL keeps the complete history available after refreshes and reconnects.
+Users sign in with GitHub, select a repository, and work from its dedicated live chatroom. GitHub activity and security results appear as readable bot messages, while Neon PostgreSQL keeps the complete history available after refreshes and reconnects.
 
 ## What OpsBridge provides
 
