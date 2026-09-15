@@ -80,6 +80,15 @@ jobs:
           exit-code: 1
           ignore-unfixed: false
 
+      # `output: trivy-report.txt` above sends the table to a file, not the
+      # job log, so a failed run otherwise just shows a bare "exit code 1"
+      # with no indication of what was found. Print it into the log too so
+      # reviewers don't have to download the artifact just to see why the
+      # check failed. This step always runs, even after the scan step fails.
+      - name: Print Trivy report to the job log
+        if: always()
+        run: cat trivy-report.txt
+
       # Always upload the report, even when the scan step above fails the job,
       # so reviewers can see exactly what was found.
       - name: Upload Trivy scan report artifact

@@ -94,7 +94,13 @@ jobs:
       #   --error         -> makes the process exit non-zero if any finding
       #                       matching the filters above is present; exits 0
       #                       when there are none.
-      #   --metrics=off   -> disable Semgrep's anonymous usage telemetry.
+      #   (no --metrics flag) -> Semgrep refuses to resolve `--config auto`
+      #                       when metrics are fully disabled ("Cannot create
+      #                       auto config when metrics are off"), so this is
+      #                       left at Semgrep's default ("auto"), which only
+      #                       sends anonymized rule-usage stats when a
+      #                       Registry config like `auto` is used — never
+      #                       source code, and no account/token involved.
       #   --json --output -> writes a machine-readable JSON report to file,
       #                       written before the exit-code check, so it's
       #                       available for upload even when the step fails.
@@ -103,7 +109,6 @@ jobs:
           semgrep scan \
             --config auto \
             --severity ERROR \
-            --metrics=off \
             --json \
             --output semgrep-results.json \
             --error \
