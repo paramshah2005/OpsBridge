@@ -114,6 +114,23 @@ jobs:
             --error \
             .
 
+      # `--json --output` above sends full finding detail to a file, not the
+      # job log — the console only shows a count ("Findings: 1 (1 blocking)"),
+      # not which file/line/rule triggered it. Print a human-readable summary
+      # into the log too, so reviewers don't have to download the artifact
+      # just to see what was flagged. Always runs, even after the scan step
+      # fails (that failure is expected whenever a blocking finding exists).
+      - name: Print Semgrep findings to the job log
+        if: always()
+        run: |
+          if [ -s semgrep-results.json ]; then
+            echo "Semgrep findings (ERROR severity):"
+            jq -r '.results[] | "- \(.path):\(.start.line)  [\(.check_id)]\n    \(.extra.message | gsub("\n";" "))\n"' semgrep-results.json \
+              || cat semgrep-results.json
+          else
+            echo "No semgrep-results.json found (scan may not have run)."
+          fi
+
       # Always upload the report, even when the scan step above fails the job,
       # so reviewers can see exactly what was found.
       - name: Upload Semgrep scan report artifact
