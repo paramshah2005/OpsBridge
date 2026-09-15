@@ -1,0 +1,92 @@
+# OpsBridge Trivy Security Scan
+#
+# Scans the repository filesystem (source tree + dependency manifests/lockfiles)
+# for known vulnerabilities and misconfigurations using Trivy.
+#
+# Design notes (read before copying into a new repo):
+#   - No Docker image is built or scanned; this is a filesystem/dependency scan
+#     only, so no Dockerfile is required in the target repo.
+#   - Triggered by `pull_request` (never `pull_request_target`), so workflow
+#     runs from forked pull requests automatically get a read-only GITHUB_TOKEN
+#     and no access to repository secrets. Nothing in this workflow requires
+#     secrets, so it is safe to run untouched against fork PRs.
+#   - `permissions` is pinned to the minimum needed (read repo contents only).
+#   - The job is named "OpsBridge Trivy Security Scan" — that exact string is
+#     the GitHub Actions "check name" to require in branch protection rules.
+name: OpsBridge Trivy Security Scan
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - ready_for_review
+  # Allows re-running this scan on demand from the Actions tab.
+  workflow_dispatch: {}
+
+# Cancel superseded runs for the same PR so only the latest commit is scanned.
+concurrency:
+  group: opsbridge-trivy-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+# Repo-wide default: read-only. No job below needs anything broader.
+permissions:
+  contents: read
+
+jobs:
+  trivy-scan:
+    # This is the stable check name — do not change without updating branch protection.
+    name: OpsBridge Trivy Security Scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      # Check out the PR's code as a plain, read-only checkout. We do not need
+      # write access to the repo, so we explicitly disable credential
+      # persistence to reduce the blast radius if a later step is compromised.
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      # Official Trivy GitHub Action, pinned to an immutable commit SHA
+      # (aquasecurity/trivy-action has previously been hit by a tag-hijacking
+      # supply-chain attack, so tag-based pinning like "@v0.36.0" alone is not
+      # sufficient here — always verify the SHA against the upstream release
+      # before bumping it).
+      #
+      # scan-type: fs   -> scans the filesystem (source + lockfiles), not an
+      #                     image, so no Dockerfile is needed anywhere.
+      # scanners:       -> vuln (dependency/OS vulnerabilities) + misconfig
+      #                     (IaC / config misconfigurations), per requirements.
+      # severity:       -> only HIGH and CRITICAL findings are considered.
+      # exit-code: 1    -> the step (and therefore the job/check) fails with a
+      #                     non-zero exit code if any HIGH/CRITICAL finding is
+      #                     present; if none are found, the step exits 0.
+      # output:         -> writes a human-readable table report to a file so it
+      #                     can be uploaded as an artifact regardless of the
+      #                     step's pass/fail outcome.
+      - name: Run Trivy filesystem & dependency scan
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          scan-type: fs
+          scan-ref: .
+          scanners: vuln,misconfig
+          format: table
+          output: trivy-report.txt
+          severity: HIGH,CRITICAL
+          exit-code: 1
+          ignore-unfixed: false
+
+      # Always upload the report, even when the scan step above fails the job,
+      # so reviewers can see exactly what was found.
+      - name: Upload Trivy scan report artifact
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: opsbridge-trivy-report
+          path: trivy-report.txt
+          retention-days: 30
+          if-no-files-found: warn

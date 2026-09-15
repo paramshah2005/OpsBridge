@@ -1,0 +1,121 @@
+# OpsBridge Semgrep Security Scan
+#
+# Statically analyzes the repository's source code with Semgrep using its
+# automatic ("auto") rule selection, which picks community security rules
+# based on the languages Semgrep detects in the repo — no manual ruleset
+# curation and no Semgrep Cloud/AppSec token required.
+#
+# Design notes (read before copying into a new repo):
+#   - Semgrep is installed as a pinned Python package (not a third-party
+#     Docker/composite Action), so the only third-party supply-chain surface
+#     is a single pinned PyPI release, and no source code is modified.
+#   - Triggered by `pull_request` (never `pull_request_target`), so workflow
+#     runs from forked pull requests automatically get a read-only GITHUB_TOKEN
+#     and no access to repository secrets — safe by default for fork PRs.
+#   - `permissions` is pinned to the minimum needed (read repo contents only).
+#   - The job is named "OpsBridge Semgrep Security Scan" — that exact string
+#     is the GitHub Actions "check name" to require in branch protection rules.
+name: OpsBridge Semgrep Security Scan
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - ready_for_review
+  # Allows re-running this scan on demand from the Actions tab.
+  workflow_dispatch: {}
+
+# Cancel superseded runs for the same PR so only the latest commit is scanned.
+concurrency:
+  group: opsbridge-semgrep-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+# Repo-wide default: read-only. No job below needs anything broader.
+permissions:
+  contents: read
+
+jobs:
+  semgrep-scan:
+    # This is the stable check name — do not change without updating branch protection.
+    name: OpsBridge Semgrep Security Scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      # Check out the PR's code as a plain, read-only checkout. We do not need
+      # write access to the repo, so credential persistence is disabled.
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Python (for the Semgrep CLI)
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+
+      # Install Semgrep from PyPI at a pinned version. This avoids depending
+      # on a third-party GitHub Action or Docker image for the scan engine.
+      - name: Install Semgrep
+        run: pip install --no-cache-dir semgrep==1.177.0
+
+      # Requirement: use npm (not pnpm) whenever dependency installation is
+      # needed. Semgrep's `--config auto` does not require installed project
+      # dependencies to analyze the code, but if the repo has a JS/TS
+      # package manifest we install it with npm so any workspace tooling
+      # Semgrep shells out to (e.g. resolving a local eslint/tsconfig) has
+      # what it needs. This step never modifies application source files.
+      - name: Install JS/TS dependencies with npm (only if present)
+        if: hashFiles('**/package-lock.json') != '' || hashFiles('**/package.json') != ''
+        run: |
+          if [ -f package-lock.json ]; then
+            npm ci
+          elif [ -f package.json ]; then
+            npm install
+          else
+            echo "No root package.json found; skipping npm install."
+          fi
+
+      # Run the scan.
+      #   --config auto   -> automatic/default rules for whatever languages
+      #                       Semgrep detects in the repo; pulled anonymously
+      #                       from the public Semgrep Registry, no
+      #                       SEMGREP_APP_TOKEN / Cloud account needed.
+      #   --severity ERROR-> Semgrep does not expose a CLI flag to filter by
+      #                       the rule-metadata "confidence" field directly,
+      #                       so ERROR severity (the highest severity tier
+      #                       used by Semgrep's default security rules, and
+      #                       the tier those rules mark as high-confidence)
+      #                       is used as the practical stand-in: only ERROR
+      #                       findings are evaluated for pass/fail.
+      #   --error         -> makes the process exit non-zero if any finding
+      #                       matching the filters above is present; exits 0
+      #                       when there are none.
+      #   --metrics=off   -> disable Semgrep's anonymous usage telemetry.
+      #   --json --output -> writes a machine-readable JSON report to file,
+      #                       written before the exit-code check, so it's
+      #                       available for upload even when the step fails.
+      - name: Run Semgrep scan
+        run: |
+          semgrep scan \
+            --config auto \
+            --severity ERROR \
+            --metrics=off \
+            --json \
+            --output semgrep-results.json \
+            --error \
+            .
+
+      # Always upload the report, even when the scan step above fails the job,
+      # so reviewers can see exactly what was found.
+      - name: Upload Semgrep scan report artifact
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: opsbridge-semgrep-report
+          path: semgrep-results.json
+          retention-days: 30
+          if-no-files-found: warn
