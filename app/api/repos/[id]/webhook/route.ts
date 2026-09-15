@@ -5,7 +5,7 @@ import { decryptAccessToken, getSession } from "../../../../lib/session";
 import { createRepositoryWebhook, deleteRepositoryWebhook, getGitHubRepository } from "../../../../lib/github";
 
 type Params = { params: Promise<{ id: string }> };
-const events = ["push", "pull_request", "create", "delete"];
+const events = ["push", "pull_request", "create", "delete", "workflow_run"];
 
 async function context(params: Params["params"]) {
   const session = await getSession(cookies());
