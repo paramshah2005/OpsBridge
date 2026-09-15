@@ -624,7 +624,7 @@ body {
   .bot-stack { height: 292px; }
   .bot-message { height: 96px; }
   .bot-message:nth-child(2) { --stack-offset: 94px !important; }
-  .bot-message:nth-child(3) { --stack-offset: 188px !important; }
+  .bot-message:nth-child(3) { --stack-offset: 180px !important; }
 }
 
 @media (prefers-reduced-motion: reduce) {
