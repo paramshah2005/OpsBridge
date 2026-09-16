@@ -32,6 +32,20 @@ export async function POST(request: Request) {
     if (inserted[0].processingStatus === "processed" || inserted[0].processingStatus === "ignored")
       return NextResponse.json({ ok: true, duplicate: true });
     await db`UPDATE webhook_subscriptions SET github_hook_id = ${hookId}, status = 'active', last_delivery_at = now(), updated_at = now() WHERE github_repo_id = ${repoId}`;
+    if (normalized.workflowKey && normalized.workflowStatus) {
+      broadcastToRoom(String(repoId), {
+        type: "scan_status",
+        scan: {
+          key: normalized.workflowKey,
+          name: normalized.workflowName,
+          status: normalized.workflowStatus,
+          branch: normalized.branchName,
+          commit: normalized.workflowCommit ? normalized.workflowCommit.slice(0, 7) : null,
+          updatedAt: normalized.occurredAt,
+          url: normalized.workflowUrl,
+        },
+      });
+    }
     if (!normalized.message) {
       await db`UPDATE webhook_events SET processing_status = 'ignored', processed_at = now(), processing_error = NULL WHERE id = ${eventId}`;
       return NextResponse.json({ ok: true, ignored: true });

@@ -6,6 +6,17 @@ export type GitHubRepository = {
   permissions?: { admin?: boolean };
 };
 
+export type GitHubWorkflowRun = {
+  id: number;
+  name: string | null;
+  status: string | null;
+  conclusion: string | null;
+  head_branch: string | null;
+  head_sha: string | null;
+  html_url: string | null;
+  updated_at: string | null;
+};
+
 const headers = (token: string) => ({
   Authorization: `Bearer ${token}`,
   Accept: "application/vnd.github+json",
@@ -20,6 +31,16 @@ export async function getGitHubRepository(token: string, repoId: number) {
   });
   if (!response.ok) return null;
   return (await response.json()) as GitHubRepository;
+}
+
+export async function getLatestWorkflowRuns(token: string, repository: GitHubRepository) {
+  const response = await fetch(
+    `https://api.github.com/repos/${encodeURIComponent(repository.owner.login)}/${encodeURIComponent(repository.name)}/actions/runs?per_page=100`,
+    { headers: headers(token), cache: "no-store" },
+  );
+  if (!response.ok) throw new Error("GitHub could not load workflow runs.");
+  const data = (await response.json()) as { workflow_runs?: GitHubWorkflowRun[] };
+  return data.workflow_runs || [];
 }
 
 export async function createRepositoryWebhook(
