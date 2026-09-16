@@ -30,10 +30,13 @@ export async function GET(_: Request, { params }: Params) {
     if (!repository) return NextResponse.json({ error: "Repository not found or unavailable." }, { status: 404 });
     const runs = await getLatestWorkflowRuns(token, repository);
     const scans = (Object.entries(workflowNames) as [keyof typeof workflowNames, string][]).map(([key, name]) => {
-      const run = runs.find((candidate) => candidate.name === name);
+      const run = runs
+        .filter((candidate) => candidate.name === name)
+        .sort((left, right) => (Date.parse(right.updated_at || "") || 0) - (Date.parse(left.updated_at || "") || 0))[0];
       return {
         key,
         name,
+        runId: run?.id || null,
         status: status(run),
         branch: run?.head_branch || null,
         commit: run?.head_sha ? run.head_sha.slice(0, 7) : null,
