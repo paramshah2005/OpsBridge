@@ -3,6 +3,7 @@ export type GitHubRepository = {
   name: string;
   full_name: string;
   owner: { login: string };
+  default_branch?: string;
   permissions?: { admin?: boolean };
 };
 
@@ -74,4 +75,43 @@ export async function deleteRepositoryWebhook(token: string, repository: GitHubR
     { method: "DELETE", headers: headers(token) },
   );
   if (!response.ok && response.status !== 404) throw new Error("GitHub could not remove this webhook.");
+}
+
+async function githubError(response: Response, fallback: string) {
+  const detail = await response.json().catch(() => null) as { message?: string } | null;
+  return new Error(detail?.message || fallback);
+}
+
+export async function dispatchWorkflow(token: string, repository: GitHubRepository, workflowFile: string, ref = repository.default_branch || "main") {
+  const response = await fetch(`https://api.github.com/repos/${encodeURIComponent(repository.owner.login)}/${encodeURIComponent(repository.name)}/actions/workflows/${encodeURIComponent(workflowFile)}/dispatches`, {
+    method: "POST",
+    headers: { ...headers(token), "Content-Type": "application/json" },
+    body: JSON.stringify({ ref }),
+  });
+  if (!response.ok) throw await githubError(response, `GitHub could not dispatch ${workflowFile}.`);
+}
+
+export async function createPullRequest(token: string, repository: GitHubRepository, head: string, base: string, title: string) {
+  const response = await fetch(`https://api.github.com/repos/${encodeURIComponent(repository.owner.login)}/${encodeURIComponent(repository.name)}/pulls`, {
+    method: "POST",
+    headers: { ...headers(token), "Content-Type": "application/json" },
+    body: JSON.stringify({ head, base, title }),
+  });
+  if (!response.ok) throw await githubError(response, "GitHub could not create the pull request.");
+  return (await response.json()) as { number: number; html_url: string; title: string };
+}
+
+export async function getRepositoryStats(token: string, repository: GitHubRepository) {
+  const response = await fetch(`https://api.github.com/repos/${encodeURIComponent(repository.owner.login)}/${encodeURIComponent(repository.name)}`, { headers: headers(token), cache: "no-store" });
+  if (!response.ok) throw await githubError(response, "GitHub could not load repository status.");
+  const data = await response.json() as Record<string, unknown>;
+  return {
+    name: typeof data.full_name === "string" ? data.full_name : repository.full_name,
+    defaultBranch: typeof data.default_branch === "string" ? data.default_branch : repository.default_branch || "main",
+    visibility: data.private === true ? "private" : "public",
+    stars: typeof data.stargazers_count === "number" ? data.stargazers_count : 0,
+    forks: typeof data.forks_count === "number" ? data.forks_count : 0,
+    openIssues: typeof data.open_issues_count === "number" ? data.open_issues_count : 0,
+    language: typeof data.language === "string" ? data.language : "Not specified",
+  };
 }
