@@ -13,7 +13,7 @@ export async function GET(request: Request, { params }: Params) {
   if (!Number.isSafeInteger(repoId)) return NextResponse.json({ error: "Invalid repository" }, { status: 400 });
   try {
     const db = getDb();
-    const rows = await db`SELECT id, github_repo_id AS "repoId", author_login AS "authorLogin", content, message_type AS "messageType", created_at AS "createdAt" FROM messages WHERE github_repo_id = ${repoId} ORDER BY created_at ASC LIMIT 200`;
+    const rows = await db`SELECT id, github_repo_id AS "repoId", author_login AS "authorLogin", content, message_type AS "messageType", created_at AS "createdAt" FROM messages WHERE github_repo_id = ${repoId} ORDER BY created_at DESC LIMIT 200`;
     return NextResponse.json(rows);
   } catch (error) { console.error("Failed to load messages", error); return NextResponse.json({ error: "Unable to load chat history" }, { status: 500 }); }
 }
