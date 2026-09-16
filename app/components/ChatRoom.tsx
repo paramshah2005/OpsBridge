@@ -7,10 +7,10 @@ type Message = { id: number; authorLogin: string; content: string; createdAt: st
 type FeedStatus = "loading" | "uninitialized" | "pending" | "active" | "failed" | "disabled";
 type ScanStatus = "idle" | "running" | "completed" | "failed";
 type ScanKey = "semgrep" | "trivy";
-type Scan = { key: ScanKey; name: string; status: ScanStatus; branch: string | null; commit: string | null; updatedAt: string | null; url: string | null };
+type Scan = { key: ScanKey; name: string; runId: number | null; status: ScanStatus; branch: string | null; commit: string | null; updatedAt: string | null; url: string | null };
 
 const workflowNames: Record<ScanKey, string> = { semgrep: "OpsBridge Semgrep Security Scan", trivy: "OpsBridge Trivy Security Scan" };
-const emptyScans: Scan[] = (Object.entries(workflowNames) as [ScanKey, string][]).map(([key, name]) => ({ key, name, status: "idle", branch: null, commit: null, updatedAt: null, url: null }));
+const emptyScans: Scan[] = (Object.entries(workflowNames) as [ScanKey, string][]).map(([key, name]) => ({ key, name, runId: null, status: "idle", branch: null, commit: null, updatedAt: null, url: null }));
 const legacyActivityEmoji = /^[📦🔵🟣⚪🌱🗑️🤖↑⇄⑂]\s*/u;
 
 function ActivityIcon({ content }: { content: string }) {
@@ -40,8 +40,17 @@ export default function ChatRoom({ repoId, repoName, login }: { repoId: string; 
   const activityStack = useMemo(() => botMessages.slice(-3).reverse(), [botMessages]);
   const groupMessages = useMemo(() => messages.filter((message) => message.messageType !== "system_message"), [messages]);
 
+  function isNewerScan(incoming: Scan, current: Scan) {
+    if (incoming.key !== current.key) return false;
+    if (incoming.runId !== null && current.runId === incoming.runId) {
+      return (Date.parse(incoming.updatedAt || "") || 0) >= (Date.parse(current.updatedAt || "") || 0);
+    }
+    if (incoming.runId !== null && current.runId === null) return true;
+    return (Date.parse(incoming.updatedAt || "") || 0) > (Date.parse(current.updatedAt || "") || 0);
+  }
+
   const loadMessages = useCallback(async () => { const response = await fetch(`/api/repos/${repoId}/messages`, { cache: "no-store" }); if (!response.ok) throw new Error("Chat history could not be loaded."); setMessages(await response.json()); }, [repoId]);
-  const loadScans = useCallback(async () => { const response = await fetch(`/api/repos/${repoId}/scans`, { cache: "no-store" }); if (!response.ok) return; const data = await response.json() as { scans?: Scan[] }; if (data.scans) setScans(data.scans); }, [repoId]);
+  const loadScans = useCallback(async () => { const response = await fetch(`/api/repos/${repoId}/scans`, { cache: "no-store" }); if (!response.ok) return; const data = await response.json() as { scans?: Scan[] }; if (data.scans) setScans((current) => current.map((scan) => { const incoming = data.scans!.find((candidate) => candidate.key === scan.key); return incoming && isNewerScan(incoming, scan) ? incoming : scan; })); }, [repoId]);
   useEffect(() => { loadMessages().catch((e) => setError(e.message)).finally(() => setLoading(false)); }, [loadMessages]);
   useEffect(() => { loadScans().catch(() => undefined); }, [loadScans]);
 
@@ -53,7 +62,7 @@ export default function ChatRoom({ repoId, repoName, login }: { repoId: string; 
     const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
     const socket = new WebSocket(`${protocol}//${window.location.host}/api/ws`);
     socket.onopen = () => { setConnection("connected"); socket.send(JSON.stringify({ type: "join", repoId })); };
-    socket.onmessage = (event) => { try { const payload = JSON.parse(event.data) as { type?: string; message?: Message; scan?: Scan }; if (payload.type === "message" && payload.message) setMessages((current) => current.some((message) => message.id === payload.message!.id) ? current : [...current, payload.message!]); if (payload.type === "scan_status" && payload.scan) setScans((current) => current.map((scan) => scan.key === payload.scan!.key ? payload.scan! : scan)); } catch { /* Ignore malformed frames. */ } };
+    socket.onmessage = (event) => { try { const payload = JSON.parse(event.data) as { type?: string; message?: Message; scan?: Scan }; if (payload.type === "message" && payload.message) setMessages((current) => current.some((message) => message.id === payload.message!.id) ? current : [...current, payload.message!]); if (payload.type === "scan_status" && payload.scan) setScans((current) => current.map((scan) => isNewerScan(payload.scan!, scan) ? payload.scan! : scan)); } catch { /* Ignore malformed frames. */ } };
     socket.onclose = () => setConnection("offline"); socket.onerror = () => setConnection("offline");
     return () => socket.close();
   }, [repoId]);

@@ -38,6 +38,7 @@ export async function POST(request: Request) {
         scan: {
           key: normalized.workflowKey,
           name: normalized.workflowName,
+          runId: normalized.workflowRunId,
           status: normalized.workflowStatus,
           branch: normalized.branchName,
           commit: normalized.workflowCommit ? normalized.workflowCommit.slice(0, 7) : null,
