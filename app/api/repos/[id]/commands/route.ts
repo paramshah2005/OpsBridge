@@ -9,7 +9,7 @@ import { getDb } from "../../../../lib/db";
 type Params = { params: Promise<{ id: string }> };
 
 async function saveResult(repoId: number, content: string) {
-  const rows = await getDb()`INSERT INTO messages (github_repo_id, author_login, content, message_type) VALUES (${repoId}, 'opsbridge-bot', ${content}, 'system_message') RETURNING id, github_repo_id AS "repoId", author_login AS "authorLogin", content, message_type AS "messageType", created_at AS "createdAt"`;
+  const rows = await getDb()`INSERT INTO messages (github_repo_id, author_login, content, message_type) VALUES (${repoId}, 'opsbridge-command', ${content}, 'system_message') RETURNING id, github_repo_id AS "repoId", author_login AS "authorLogin", content, message_type AS "messageType", created_at AS "createdAt"`;
   broadcastToRoom(String(repoId), { type: "message", message: rows[0] });
   return rows[0];
 }

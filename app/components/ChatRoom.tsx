@@ -14,6 +14,17 @@ const workflowNames: Record<ScanKey, string> = { semgrep: "OpsBridge Semgrep Sec
 const emptyScans: Scan[] = (Object.entries(workflowNames) as [ScanKey, string][]).map(([key, name]) => ({ key, name, runId: null, status: "idle", branch: null, commit: null, updatedAt: null, url: null }));
 const legacyActivityEmoji = /^[📦🔵🟣⚪🌱🗑️🤖↑⇄⑂]\s*/u;
 
+function isCommandResult(message: Message) {
+  if (message.messageType !== "system_message") return false;
+  return message.authorLogin === "opsbridge-command"
+    || message.content.startsWith("/")
+    || message.content.startsWith("Usage:")
+    || message.content.startsWith("Unknown command:")
+    || message.content.startsWith("Command failed:")
+    || message.content.startsWith("Pull request #")
+    || message.content.includes("scan dispatched on ");
+}
+
 function ActivityIcon({ content }: { content: string }) {
   const normalized = content.toLowerCase();
   if (normalized.includes("pull request")) return <LuGitPullRequest aria-hidden="true" size={17} strokeWidth={2} />;
@@ -39,9 +50,9 @@ export default function ChatRoom({ repoId, repoName, login }: { repoId: string; 
   const [commandMenuOpen, setCommandMenuOpen] = useState(false);
   const [commandIndex, setCommandIndex] = useState(0);
   const endRef = useRef<HTMLDivElement>(null);
-  const botMessages = useMemo(() => messages.filter((message) => message.messageType === "system_message"), [messages]);
+  const botMessages = useMemo(() => messages.filter((message) => message.messageType === "system_message" && !isCommandResult(message)), [messages]);
   const activityStack = useMemo(() => botMessages.slice(-3).reverse(), [botMessages]);
-  const groupMessages = useMemo(() => messages.filter((message) => message.messageType !== "system_message"), [messages]);
+  const groupMessages = useMemo(() => messages.filter((message) => message.messageType !== "system_message" || isCommandResult(message)), [messages]);
 
   function isNewerScan(incoming: Scan, current: Scan) {
     if (incoming.key !== current.key) return false;
