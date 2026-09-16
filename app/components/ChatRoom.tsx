@@ -50,6 +50,7 @@ export default function ChatRoom({ repoId, repoName, login }: { repoId: string; 
   const [commandMenuOpen, setCommandMenuOpen] = useState(false);
   const [commandIndex, setCommandIndex] = useState(0);
   const endRef = useRef<HTMLDivElement>(null);
+  const messageLoadId = useRef(0);
   const botMessages = useMemo(() => messages.filter((message) => message.messageType === "system_message" && !isCommandResult(message)), [messages]);
   const activityStack = useMemo(() => botMessages.slice(-3).reverse(), [botMessages]);
   const groupMessages = useMemo(() => messages.filter((message) => message.messageType !== "system_message" || isCommandResult(message)), [messages]);
@@ -63,7 +64,22 @@ export default function ChatRoom({ repoId, repoName, login }: { repoId: string; 
     return (Date.parse(incoming.updatedAt || "") || 0) > (Date.parse(current.updatedAt || "") || 0);
   }
 
-  const loadMessages = useCallback(async () => { const response = await fetch(`/api/repos/${repoId}/messages`, { cache: "no-store" }); if (!response.ok) throw new Error("Chat history could not be loaded."); setMessages(await response.json()); }, [repoId]);
+  const loadMessages = useCallback(async () => {
+    const loadId = ++messageLoadId.current;
+    const response = await fetch(`/api/repos/${repoId}/messages`, { cache: "no-store" });
+    if (!response.ok) throw new Error("Chat history could not be loaded.");
+    const incoming = await response.json() as Message[];
+    if (loadId !== messageLoadId.current) return;
+    setMessages((current) => {
+      const byId = new Map<number, Message>();
+      for (const message of current) byId.set(message.id, message);
+      for (const message of incoming) byId.set(message.id, message);
+      return [...byId.values()].sort((left, right) => {
+        const timeDifference = Date.parse(left.createdAt) - Date.parse(right.createdAt);
+        return timeDifference || left.id - right.id;
+      });
+    });
+  }, [repoId]);
   const loadScans = useCallback(async () => { const response = await fetch(`/api/repos/${repoId}/scans`, { cache: "no-store" }); if (!response.ok) return; const data = await response.json() as { scans?: Scan[] }; if (data.scans) setScans((current) => current.map((scan) => { const incoming = data.scans!.find((candidate) => candidate.key === scan.key); return incoming && isNewerScan(incoming, scan) ? incoming : scan; })); }, [repoId]);
   useEffect(() => { loadMessages().catch((e) => setError(e.message)).finally(() => setLoading(false)); }, [loadMessages]);
   useEffect(() => { loadScans().catch(() => undefined); }, [loadScans]);
