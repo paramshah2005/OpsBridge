@@ -50,3 +50,23 @@ CREATE TABLE IF NOT EXISTS webhook_events (
 
 CREATE INDEX IF NOT EXISTS webhook_events_repo_received_idx
   ON webhook_events (github_repo_id, received_at DESC);
+
+CREATE TABLE IF NOT EXISTS deployment_status_events (
+  id BIGSERIAL PRIMARY KEY,
+  github_repo_id BIGINT NOT NULL,
+  deployment_id TEXT NOT NULL,
+  status TEXT NOT NULL CHECK (status IN ('success')),
+  repository_name TEXT NOT NULL,
+  environment TEXT,
+  target_url TEXT,
+  commit_sha TEXT,
+  ref_name TEXT,
+  raw_payload JSONB NOT NULL,
+  message_id BIGINT REFERENCES messages(id),
+  occurred_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  UNIQUE (github_repo_id, deployment_id)
+);
+
+CREATE INDEX IF NOT EXISTS deployment_status_events_repo_occurred_idx
+  ON deployment_status_events (github_repo_id, occurred_at DESC);

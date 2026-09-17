@@ -1,0 +1,48 @@
+name: Forward Vercel Deployment Status
+
+on:
+  deployment_status:
+
+permissions:
+  contents: read
+
+jobs:
+  forward-success:
+    if: github.event.deployment_status.state == 'success'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Forward successful Vercel deployment
+        env:
+          WEBHOOK_URL: ${{ secrets.MY_WEBHOOK_URL }}
+          REPOSITORY_NAME: ${{ github.repository }}
+          ENVIRONMENT: ${{ github.event.deployment.environment }}
+          TARGET_URL: ${{ github.event.deployment_status.target_url }}
+          DEPLOYMENT_ID: ${{ github.event.deployment.id }}
+          COMMIT_SHA: ${{ github.event.deployment.sha }}
+          REF_NAME: ${{ github.event.deployment.ref }}
+        run: |
+          payload="$(jq -n \
+            --arg event_type "deployment.success" \
+            --arg repository "$REPOSITORY_NAME" \
+            --arg environment "${ENVIRONMENT:-preview}" \
+            --arg target_url "$TARGET_URL" \
+            --arg deployment_id "$DEPLOYMENT_ID" \
+            --arg commit_sha "$COMMIT_SHA" \
+            --arg ref "$REF_NAME" \
+            '{
+              event_type: $event_type,
+              repository: $repository,
+              environment: $environment,
+              target_url: $target_url,
+              deployment_id: $deployment_id,
+              commit_sha: $commit_sha,
+              ref: $ref
+            }'
+          )"
+
+          curl --fail-with-body --silent --show-error \
+            --request POST \
+            --header "Content-Type: application/json" \
+            --data "$payload" \
+            "$WEBHOOK_URL"
