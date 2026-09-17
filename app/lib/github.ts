@@ -18,6 +18,23 @@ export type GitHubWorkflowRun = {
   updated_at: string | null;
 };
 
+export type GitHubPullRequest = {
+  number: number;
+  title: string;
+  html_url: string;
+  user?: { login?: string };
+  head?: { ref?: string };
+  base?: { ref?: string };
+  updated_at?: string;
+  merged_at?: string | null;
+};
+
+export type GitHubCommit = {
+  sha: string;
+  html_url?: string;
+  commit?: { message?: string; author?: { name?: string; date?: string } };
+};
+
 const headers = (token: string) => ({
   Authorization: `Bearer ${token}`,
   Accept: "application/vnd.github+json",
@@ -42,6 +59,33 @@ export async function getLatestWorkflowRuns(token: string, repository: GitHubRep
   if (!response.ok) throw new Error("GitHub could not load workflow runs.");
   const data = (await response.json()) as { workflow_runs?: GitHubWorkflowRun[] };
   return data.workflow_runs || [];
+}
+
+export async function getOpenPullRequests(token: string, repository: GitHubRepository) {
+  const response = await fetch(`https://api.github.com/repos/${encodeURIComponent(repository.owner.login)}/${encodeURIComponent(repository.name)}/pulls?state=open&per_page=100`, { headers: headers(token), cache: "no-store" });
+  if (!response.ok) throw new Error("GitHub could not load pull requests.");
+  return (await response.json()) as GitHubPullRequest[];
+}
+
+export async function getRecentlyMergedPullRequest(token: string, repository: GitHubRepository) {
+  const response = await fetch(`https://api.github.com/repos/${encodeURIComponent(repository.owner.login)}/${encodeURIComponent(repository.name)}/pulls?state=closed&sort=updated&direction=desc&per_page=20`, { headers: headers(token), cache: "no-store" });
+  if (!response.ok) throw new Error("GitHub could not load recently merged pull requests.");
+  const pullRequests = (await response.json()) as GitHubPullRequest[];
+  return pullRequests.find((pullRequest) => pullRequest.merged_at) || null;
+}
+
+export async function getContributors(token: string, repository: GitHubRepository) {
+  const response = await fetch(`https://api.github.com/repos/${encodeURIComponent(repository.owner.login)}/${encodeURIComponent(repository.name)}/contributors?per_page=5`, { headers: headers(token), cache: "no-store" });
+  if (!response.ok) throw new Error("GitHub could not load contributors.");
+  const contributors = (await response.json()) as Array<{ login?: string }>;
+  return contributors.map((contributor) => contributor.login).filter((login): login is string => Boolean(login));
+}
+
+export async function getLatestCommit(token: string, repository: GitHubRepository) {
+  const response = await fetch(`https://api.github.com/repos/${encodeURIComponent(repository.owner.login)}/${encodeURIComponent(repository.name)}/commits?sha=${encodeURIComponent(repository.default_branch || "main")}&per_page=1`, { headers: headers(token), cache: "no-store" });
+  if (!response.ok) throw new Error("GitHub could not load the latest commit.");
+  const commits = (await response.json()) as GitHubCommit[];
+  return commits[0] || null;
 }
 
 export async function createRepositoryWebhook(
@@ -113,5 +157,7 @@ export async function getRepositoryStats(token: string, repository: GitHubReposi
     forks: typeof data.forks_count === "number" ? data.forks_count : 0,
     openIssues: typeof data.open_issues_count === "number" ? data.open_issues_count : 0,
     language: typeof data.language === "string" ? data.language : "Not specified",
+    updatedAt: typeof data.updated_at === "string" ? data.updated_at : null,
+    watchers: typeof data.watchers_count === "number" ? data.watchers_count : 0,
   };
 }

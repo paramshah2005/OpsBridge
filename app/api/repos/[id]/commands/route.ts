@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import { createPullRequest, dispatchWorkflow, getGitHubRepository, getRepositoryStats } from "../../../../lib/github";
+import { createPullRequest, dispatchWorkflow, getContributors, getGitHubRepository, getLatestCommit, getLatestWorkflowRuns, getOpenPullRequests, getRecentlyMergedPullRequest, getRepositoryStats } from "../../../../lib/github";
 import { commandDefinitions, helpText, parseCommand } from "../../../../lib/commands";
 import { broadcastToRoom } from "../../../../lib/realtime";
 import { decryptAccessToken, getSession } from "../../../../lib/session";
@@ -46,8 +46,42 @@ export async function POST(request: Request, { params }: Params) {
         result = `Pull request #${pullRequest.number} created: ${pullRequest.title}\n${pullRequest.html_url}`;
       }
     } else if (command.name === "status") {
-      const stats = await getRepositoryStats(token, repository);
-      result = `${stats.name}\n${stats.visibility} · ${stats.language}\n⭐ ${stats.stars} · forks ${stats.forks} · open issues ${stats.openIssues}\nDefault branch: ${stats.defaultBranch}`;
+      const [stats, pullRequests, latestCommit, recentlyMerged, contributors, workflowRuns, feedRows] = await Promise.all([
+        getRepositoryStats(token, repository),
+        getOpenPullRequests(token, repository),
+        getLatestCommit(token, repository),
+        getRecentlyMergedPullRequest(token, repository),
+        getContributors(token, repository),
+        getLatestWorkflowRuns(token, repository),
+        getDb()`SELECT status, last_delivery_at AS "lastDeliveryAt" FROM webhook_subscriptions WHERE github_repo_id = ${repoId}`,
+      ]);
+      const workflowStatus = (name: string) => {
+        const run = workflowRuns.filter((candidate) => candidate.name === name).sort((left, right) => (Date.parse(right.updated_at || "") || 0) - (Date.parse(left.updated_at || "") || 0))[0];
+        if (!run) return "no runs";
+        if (run.status === "queued" || run.status === "in_progress") return "running";
+        return run.conclusion || run.status || "unknown";
+      };
+      const feed = feedRows[0];
+      const commitMessage = latestCommit?.commit?.message?.split("\n")[0] || "No commits found";
+      const commitAuthor = latestCommit?.commit?.author?.name || "Unknown author";
+      const commitDate = latestCommit?.commit?.author?.date ? new Date(latestCommit.commit.author.date).toLocaleString() : "unknown time";
+      const latestWorkflow = workflowRuns.slice().sort((left, right) => (Date.parse(right.updated_at || "") || 0) - (Date.parse(left.updated_at || "") || 0))[0];
+      result = [
+        `${stats.name}`,
+        `Repository: ${stats.visibility} · ${stats.language} · default branch: ${stats.defaultBranch}`,
+        `⭐ ${stats.stars} · forks ${stats.forks} · watchers ${stats.watchers} · open issues ${stats.openIssues}`,
+        `Updated: ${stats.updatedAt ? new Date(stats.updatedAt).toLocaleString() : "unknown"}`,
+        "",
+        `Open PRs: ${pullRequests.length}`,
+        `Recently merged: ${recentlyMerged ? `PR #${recentlyMerged.number} — ${recentlyMerged.title}` : "none"}`,
+        `Latest commit: ${commitMessage} (${commitAuthor}, ${commitDate})`,
+        `Contributors: ${contributors.length ? contributors.map((contributor) => `@${contributor}`).join(", ") : "none"}`,
+        "",
+        `Latest workflow: ${latestWorkflow?.name || "none"} · ${latestWorkflow ? workflowStatus(latestWorkflow.name || "") : "no runs"}`,
+        `Trivy: ${workflowStatus("OpsBridge Trivy Security Scan")}`,
+        `Semgrep: ${workflowStatus("OpsBridge Semgrep Security Scan")}`,
+        `Activity feed: ${feed?.status || "not initialized"}${feed?.lastDeliveryAt ? ` · last delivery ${new Date(feed.lastDeliveryAt).toLocaleString()}` : ""}`,
+      ].join("\n");
     }
     return NextResponse.json(await saveResult(repoId, result), { status: 201 });
   } catch (error) {
