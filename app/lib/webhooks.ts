@@ -41,8 +41,24 @@ export function normalizeWebhookEvent(eventName: string, payload: Payload): Norm
   if (eventName === "push") {
     const ref = text(payload.ref)?.replace(/^refs\/heads\//, "") || null;
     const commits = Array.isArray(payload.commits) ? payload.commits.length : 0;
-    return { action, actorLogin: text(object(payload.pusher).name) || actorLogin, pullRequestNumber: null, pullRequestTitle: null, branchName: ref, commitCount: commits, occurredAt, message: `${commits} new commit${commits === 1 ? "" : "s"} pushed to ${ref || "a branch"}${actorLogin ? ` by @${actorLogin}` : ""}`, workflowName: null, workflowStatus: null, workflowKey: null, workflowRunId: null, workflowCommit: null, workflowUrl: null };
-  }
+    const actorName = text(object(payload.pusher).name) || actorLogin;
+
+return {
+  action,
+  actorLogin,
+  pullRequestNumber: null,
+  pullRequestTitle: null,
+  branchName: ref,
+  commitCount: commits,
+  occurredAt,
+  message: `${commits} new commit${commits === 1 ? "" : "s"} pushed to ${ref || "a branch"}${actorName ? ` by ${actorName}` : ""}`,
+  workflowName: null,
+  workflowStatus: null,
+  workflowKey: null,
+  workflowRunId: null,
+  workflowCommit: null,
+  workflowUrl: null
+};
   if ((eventName === "create" || eventName === "delete") && text(payload.ref_type) === "branch") {
     const branchName = text(payload.ref);
     return { action, actorLogin, pullRequestNumber: null, pullRequestTitle: null, branchName, commitCount: null, occurredAt, message: `Branch ${branchName || ""} ${eventName === "create" ? "created" : "deleted"}${actorLogin ? ` by @${actorLogin}` : ""}`, workflowName: null, workflowStatus: null, workflowKey: null, workflowRunId: null, workflowCommit: null, workflowUrl: null };
