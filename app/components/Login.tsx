@@ -5,7 +5,7 @@ export default function Login() {
       <nav className="topbar"><a className="brand" href="/"><span className="brand-mark">✦</span> OpsBridge</a><span className="topbar-note">GitHub-native control plane</span></nav>
       <section className="hero-grid">
         <div className="hero-copy">
-          <p className="eyebrow"><span className="pulse" /> REPO ACCESS</p>
+          <p className="eyebrow"><span className="pulse" />REPO ACCESS</p>
           <h1>Your GitHub,<br /><em>in one clear view.</em></h1>
           <p className="lede">A calm, focused starting point for the repositories you ship. Connect your GitHub account and see your working landscape at a glance.</p>
           <a className="github-button" href="/api/auth/github"><span className="github-icon">●</span> Sign in with GitHub <span className="arrow">↗</span></a>
@@ -19,7 +19,7 @@ export default function Login() {
           </div>
         </div>
       </section>
-      <footer className="login-footer"><span>Built for teams who ship with intention.</span></footer>
+      <footer className="login-footer"><span>Built for teams who ship with intention.</span><span>Track. Understand. Act.</span></footer>
     </main>
   );
 }
