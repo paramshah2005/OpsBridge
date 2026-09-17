@@ -368,6 +368,8 @@ body {
   color: #161a16;
   min-height: 207px;
   padding: 22px;
+  display: flex;
+  flex-direction: column;
   text-decoration: none;
   border: 1px solid #dfe3dc;
   transition:
@@ -410,7 +412,7 @@ body {
 }
 .repo-meta {
   border-top: 1px solid #edf0eb;
-  margin-top: 15px;
+  margin-top: auto;
   padding-top: 13px;
   display: flex;
   gap: 15px;
