@@ -42,7 +42,7 @@ export function normalizeWebhookEvent(eventName: string, payload: Payload): Norm
     const ref = text(payload.ref)?.replace(/^refs\/heads\//, "") || null;
     const commits = Array.isArray(payload.commits) ? payload.commits.length : 0;
     const actorName = text(object(payload.pusher).name) || actorLogin;
-
+  }
 return {
   action,
   actorLogin,
