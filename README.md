@@ -12,6 +12,7 @@ Users sign in with GitHub, select a repository, and work from its dedicated live
 - Persistent messages backed by Neon PostgreSQL
 - Instant two-way realtime communication through WebSocket
 - GitHub webhook activity announcements
+- Vercel deployment status updates forwarded through GitHub Actions
 - Trivy container vulnerability scanning
 - Semgrep static application security testing
 - SBOM generation
@@ -287,7 +288,9 @@ POST /api/auth/logout          Sign out
 GET  /api/repos                List accessible GitHub repositories
 GET  /api/repos/[id]/messages  Load repository message history
 POST /api/repos/[id]/messages  Save a repository message
+GET  /api/repos/[id]/deployments  Load recent deployment statuses
 POST /api/webhooks/github      Receive signed GitHub events
+POST /api/webhooks/deployment-status  Receive forwarded deployment success events
 GET  /api/ws                   Upgrade to the realtime WebSocket connection
 ```
 
@@ -299,6 +302,7 @@ app/
 │   ├── auth/github/            GitHub OAuth routes
 │   ├── repos/                  Repository and message APIs
 │   ├── webhooks/github/        GitHub event receiver
+│   ├── webhooks/deployment-status/  Deployment status receiver
 │   └── ws/                     WebSocket upgrade route
 ├── components/                 Shared client components
 ├── repos/[id]/chat/             Repository chatroom page
