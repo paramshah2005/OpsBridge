@@ -70,7 +70,24 @@ export default function ChatRoom({ repoId, repoName, login }: { repoId: string; 
   const groupMessages = useMemo(() => messages.filter((message) => message.messageType !== "system_message" || isCommandResult(message)), [messages]);
 
   function mergeDeployment(incoming: Deployment) {
-    setDeployments((current) => [incoming, ...current.filter((item) => item.deploymentId !== incoming.deploymentId)].slice(0, 3));
+    setDeployments((current) => {
+      const existing = current.find((item) => item.deploymentId === incoming.deploymentId);
+      if (existing && Date.parse(incoming.occurredAt) < Date.parse(existing.occurredAt)) return current;
+      return [...current.filter((item) => item.deploymentId !== incoming.deploymentId), incoming]
+        .sort((left, right) => Date.parse(right.occurredAt) - Date.parse(left.occurredAt))
+        .slice(0, 3);
+    });
+  }
+
+  function mergeDeployments(incoming: Deployment[]) {
+    setDeployments((current) => {
+      const byId = new Map(current.map((item) => [item.deploymentId, item]));
+      for (const deployment of incoming) {
+        const existing = byId.get(deployment.deploymentId);
+        if (!existing || Date.parse(deployment.occurredAt) >= Date.parse(existing.occurredAt)) byId.set(deployment.deploymentId, deployment);
+      }
+      return [...byId.values()].sort((left, right) => Date.parse(right.occurredAt) - Date.parse(left.occurredAt)).slice(0, 3);
+    });
   }
 
   function isNewerScan(incoming: Scan, current: Scan) {
@@ -99,10 +116,11 @@ export default function ChatRoom({ repoId, repoName, login }: { repoId: string; 
     });
   }, [repoId]);
   const loadScans = useCallback(async () => { const response = await fetch(`/api/repos/${repoId}/scans`, { cache: "no-store" }); if (!response.ok) return; const data = await response.json() as { scans?: Scan[] }; if (data.scans) setScans((current) => current.map((scan) => { const incoming = data.scans!.find((candidate) => candidate.key === scan.key); return incoming && isNewerScan(incoming, scan) ? incoming : scan; })); }, [repoId]);
-  const loadDeployments = useCallback(async () => { const response = await fetch(`/api/repos/${repoId}/deployments`, { cache: "no-store" }); if (!response.ok) return; const data = await response.json() as { deployments?: Deployment[] }; setDeployments(data.deployments || []); }, [repoId]);
+  const loadDeployments = useCallback(async () => { const response = await fetch(`/api/repos/${repoId}/deployments`, { cache: "no-store" }); if (!response.ok) return; const data = await response.json() as { deployments?: Deployment[] }; mergeDeployments(data.deployments || []); }, [repoId]);
   useEffect(() => { loadMessages().catch((e) => setError(e.message)).finally(() => setLoading(false)); }, [loadMessages]);
   useEffect(() => { loadScans().catch(() => undefined); }, [loadScans]);
   useEffect(() => { loadDeployments().catch(() => undefined); }, [loadDeployments]);
+  useEffect(() => { const interval = window.setInterval(() => { loadDeployments().catch(() => undefined); }, 15_000); return () => window.clearInterval(interval); }, [loadDeployments]);
 
   const refreshFeedStatus = useCallback(async () => { const response = await fetch(`/api/repos/${repoId}/webhook`, { cache: "no-store" }); if (!response.ok) throw new Error("Activity feed status could not be loaded."); const data = await response.json() as { status: FeedStatus }; setFeedStatus(data.status); return data.status; }, [repoId]);
   useEffect(() => { refreshFeedStatus().catch((e: Error) => { setFeedStatus("failed"); setError(e.message); }); }, [refreshFeedStatus]);
