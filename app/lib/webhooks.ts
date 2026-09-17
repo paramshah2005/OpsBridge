@@ -33,35 +33,35 @@ export function normalizeWebhookEvent(eventName: string, payload: Payload): Norm
   const prTitle = text(pullRequest.title);
 
   if (eventName === "pull_request" && action === "opened" && prNumber && actorLogin)
-    return { action, actorLogin, pullRequestNumber: prNumber, pullRequestTitle: prTitle, branchName: null, commitCount: null, occurredAt, message: `Pull request #${prNumber} opened by @${actorLogin}${prTitle ? `: “${prTitle}”` : ""}`, workflowName: null, workflowStatus: null, workflowKey: null, workflowRunId: null, workflowCommit: null, workflowUrl: null };
+    return { action, actorLogin, pullRequestNumber: prNumber, pullRequestTitle: prTitle, branchName: null, commitCount: null, occurredAt, message: `Pull request #${prNumber} opened by @${actorLogin}${prTitle ? `: ${prTitle}` : ""}`, workflowName: null, workflowStatus: null, workflowKey: null, workflowRunId: null, workflowCommit: null, workflowUrl: null };
   if (eventName === "pull_request" && action === "closed" && prNumber) {
     const merged = pullRequest.merged === true;
-    return { action, actorLogin, pullRequestNumber: prNumber, pullRequestTitle: prTitle, branchName: null, commitCount: null, occurredAt, message: merged ? `Pull request #${prNumber} merged${prTitle ? `: “${prTitle}”` : ""}` : `Pull request #${prNumber} closed without merging${prTitle ? `: “${prTitle}”` : ""}`, workflowName: null, workflowStatus: null, workflowKey: null, workflowRunId: null, workflowCommit: null, workflowUrl: null };
+    return { action, actorLogin, pullRequestNumber: prNumber, pullRequestTitle: prTitle, branchName: null, commitCount: null, occurredAt, message: merged ? `Pull request #${prNumber} merged${prTitle ? `: ${prTitle}` : ""}` : `Pull request #${prNumber} closed${prTitle ? `: ${prTitle}` : ""}`, workflowName: null, workflowStatus: null, workflowKey: null, workflowRunId: null, workflowCommit: null, workflowUrl: null };
   }
   if (eventName === "push") {
     const ref = text(payload.ref)?.replace(/^refs\/heads\//, "") || null;
     const commits = Array.isArray(payload.commits) ? payload.commits.length : 0;
     const actorName = text(object(payload.pusher).name) || actorLogin;
+    return {
+      action,
+      actorLogin,
+      pullRequestNumber: null,
+      pullRequestTitle: null,
+      branchName: ref,
+      commitCount: commits,
+      occurredAt,
+      message: `${commits} new commit${commits === 1 ? "" : "s"} pushed to ${ref || "a branch"}${actorName ? ` by ${actorName}` : ""}`,
+      workflowName: null,
+      workflowStatus: null,
+      workflowKey: null,
+      workflowRunId: null,
+      workflowCommit: null,
+      workflowUrl: null
+    };
   }
-return {
-  action,
-  actorLogin,
-  pullRequestNumber: null,
-  pullRequestTitle: null,
-  branchName: ref,
-  commitCount: commits,
-  occurredAt,
-  message: `${commits} new commit${commits === 1 ? "" : "s"} pushed to ${ref || "a branch"}${actorName ? ` by ${actorName}` : ""}`,
-  workflowName: null,
-  workflowStatus: null,
-  workflowKey: null,
-  workflowRunId: null,
-  workflowCommit: null,
-  workflowUrl: null
-};
   if ((eventName === "create" || eventName === "delete") && text(payload.ref_type) === "branch") {
     const branchName = text(payload.ref);
-    return { action, actorLogin, pullRequestNumber: null, pullRequestTitle: null, branchName, commitCount: null, occurredAt, message: `Branch ${branchName || ""} ${eventName === "create" ? "created" : "deleted"}${actorLogin ? ` by @${actorLogin}` : ""}`, workflowName: null, workflowStatus: null, workflowKey: null, workflowRunId: null, workflowCommit: null, workflowUrl: null };
+    return { action, actorLogin, pullRequestNumber: null, pullRequestTitle: null, branchName, commitCount: null, occurredAt, message: `Branch ${branchName || ""} ${eventName === "create" ? "created" : "deleted"}`, workflowName: null, workflowStatus: null, workflowKey: null, workflowRunId: null, workflowCommit: null, workflowUrl: null };
   }
   if (eventName === "workflow_run") {
     const run = object(payload.workflow_run);
@@ -75,7 +75,7 @@ return {
     const workflowUrl = text(run.html_url);
     const runActor = text(object(run.triggering_actor).login) || actorLogin;
     const runOccurredAt = text(run.updated_at) || occurredAt;
-    const pullRequests = Array.isArray(run.pull_requests) ? run.pull_requests : [];
+    const pullRequests: unknown[] = Array.isArray(run.pull_requests) ? run.pull_requests : [];
     const runPrNumber = pullRequests.length ? number(object(pullRequests[0]).number) : null;
     const outcome =
       conclusion === "success" ? "passed" :
@@ -87,7 +87,7 @@ return {
       conclusion || "finished";
     const target = runPrNumber ? `PR #${runPrNumber}` : branchName ? `branch ${branchName}` : null;
     const message = action === "completed" && workflowName ? `${workflowName} ${outcome}${target ? ` on ${target}` : ""}` : null;
-    const workflowStatus = runStatus === "queued" || runStatus === "in_progress" ? "running" : action === "completed" || runStatus === "completed" ? conclusion === "success" ? "completed" : "failed" : null;
+    const workflowStatus = runStatus === "queued" || runStatus === "in_progress" ? "running" : action === "completed" || runStatus === "completed" ? conclusion === "success" ? "completed" : "failed" : "idle";
     return { action, actorLogin: runActor, pullRequestNumber: runPrNumber, pullRequestTitle: null, branchName, commitCount: null, occurredAt: runOccurredAt, message, workflowName, workflowStatus, workflowKey, workflowRunId, workflowCommit, workflowUrl };
   }
   return { action, actorLogin, pullRequestNumber: prNumber, pullRequestTitle: prTitle, branchName: null, commitCount: null, occurredAt, message: null, workflowName: null, workflowStatus: null, workflowKey: null, workflowRunId: null, workflowCommit: null, workflowUrl: null };
