@@ -128,9 +128,6 @@ export default function RepoPicker({ session }: { session: Session }) {
             ))}
           </div>
         )}
-        <p className="phase-note">
-          <span>✦</span> Select a repository to enter its persistent chatroom.
-        </p>
       </section>
     </main>
   );
