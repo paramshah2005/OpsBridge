@@ -45,35 +45,28 @@ export async function GET(_: Request, { params }: Params) {
     }
   };
 
-  // GitHub computes stats/* endpoints asynchronously and returns 202 while it
-  // (re)generates them, e.g. right after new commits invalidate the cache.
-  // Retry a few times with backoff before giving up, so a recent push doesn't
-  // masquerade as "zero activity".
-  const fetchStatsWithRetry = async (url: string, attempts = 3, delayMs = 1500) => {
-    for (let attempt = 0; attempt < attempts; attempt++) {
-      try {
-        const response = await fetch(url, { headers, cache: "no-store" });
-        if (response.status === 202) {
-          if (attempt < attempts - 1) {
-            await new Promise((resolve) => setTimeout(resolve, delayMs * (attempt + 1)));
-            continue;
-          }
-          return { data: null, pending: true };
-        }
-        if (!response.ok) return { data: null, pending: false };
-        return { data: await response.json(), pending: false };
-      } catch {
-        return { data: null, pending: false };
-      }
+  // GitHub computes stats/* endpoints asynchronously and returns 202 while a
+  // background job (re)generates them, e.g. the first time a repo's stats are
+  // ever requested, or right after new commits invalidate the cache. This can
+  // take anywhere from seconds to minutes, so we don't block the request
+  // retrying — we make one attempt, report "pending" on 202, and let the
+  // client's existing 60s poll naturally re-check until GitHub finishes.
+  const fetchStats = async (url: string) => {
+    try {
+      const response = await fetch(url, { headers, cache: "no-store" });
+      if (response.status === 202) return { data: null, pending: true };
+      if (!response.ok) return { data: null, pending: false };
+      return { data: await response.json(), pending: false };
+    } catch {
+      return { data: null, pending: false };
     }
-    return { data: null, pending: true };
   };
 
   const [branches, pulls, codeFrequencyResult, commitActivityResult, contributors, languages, punchCard] = await Promise.all([
     fetchJson(`https://api.github.com/repos/${owner}/${repo}/branches?per_page=100`),
     fetchJson(`https://api.github.com/repos/${owner}/${repo}/pulls?state=open&per_page=100`),
-    fetchStatsWithRetry(`https://api.github.com/repos/${owner}/${repo}/stats/code_frequency`),
-    fetchStatsWithRetry(`https://api.github.com/repos/${owner}/${repo}/stats/commit_activity`),
+    fetchStats(`https://api.github.com/repos/${owner}/${repo}/stats/code_frequency`),
+    fetchStats(`https://api.github.com/repos/${owner}/${repo}/stats/commit_activity`),
     fetchJson(`https://api.github.com/repos/${owner}/${repo}/contributors?per_page=100`),
     fetchJson(`https://api.github.com/repos/${owner}/${repo}/languages`),
     fetchJson(`https://api.github.com/repos/${owner}/${repo}/stats/punch_card`),
