@@ -9,7 +9,6 @@ type Stats = {
   statsPending: boolean;
   contributors: number;
   languages: string[];
-  commitActivity: Array<{ total: number }>;
 };
 
 export default function RepoStats({ repoId }: { repoId: string }) {
