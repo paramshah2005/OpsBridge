@@ -6,6 +6,7 @@ type Stats = {
   openPrs: number;
   additions: number;
   deletions: number;
+  statsPending: boolean;
   contributors: number;
   languages: string[];
   commitActivity: Array<{ total: number }>;
@@ -84,10 +85,14 @@ export default function RepoStats({ repoId }: { repoId: string }) {
       
       <div className="stat-row">
         <span className="stat-label">Weekly Activity</span>
-        <div className="code-freq">
-          <span className="additions">+{stats.additions || 0}</span>
-          <span className="deletions">-{stats.deletions || 0}</span>
-        </div>
+        {stats.statsPending ? (
+          <span className="stats-generating">Stats generating…</span>
+        ) : (
+          <div className="code-freq">
+            <span className="additions">+{stats.additions || 0}</span>
+            <span className="deletions">-{stats.deletions || 0}</span>
+          </div>
+        )}
       </div>
 
       {stats.languages && stats.languages.length > 0 && (

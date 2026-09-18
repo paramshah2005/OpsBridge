@@ -734,6 +734,11 @@
   color: #a94343;
 }
 
+.stats-generating {
+  font: 11px 'DM Mono';
+  color: #94711b;
+}
+
 .lang-tags {
   display: flex;
   flex-wrap: wrap;
