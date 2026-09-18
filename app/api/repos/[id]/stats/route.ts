@@ -62,11 +62,10 @@ export async function GET(_: Request, { params }: Params) {
     }
   };
 
-  const [branches, pulls, codeFrequencyResult, commitActivityResult, contributors, languages, punchCard] = await Promise.all([
+  const [branches, pulls, codeFrequencyResult, contributors, languages, punchCard] = await Promise.all([
     fetchJson(`https://api.github.com/repos/${owner}/${repo}/branches?per_page=100`),
     fetchJson(`https://api.github.com/repos/${owner}/${repo}/pulls?state=open&per_page=100`),
     fetchStats(`https://api.github.com/repos/${owner}/${repo}/stats/code_frequency`),
-    fetchStats(`https://api.github.com/repos/${owner}/${repo}/stats/commit_activity`),
     fetchJson(`https://api.github.com/repos/${owner}/${repo}/contributors?per_page=100`),
     fetchJson(`https://api.github.com/repos/${owner}/${repo}/languages`),
     fetchJson(`https://api.github.com/repos/${owner}/${repo}/stats/punch_card`),
@@ -76,8 +75,7 @@ export async function GET(_: Request, { params }: Params) {
   const openPrs = pulls ? pulls.length : 0;
 
   const codeFrequency = codeFrequencyResult.data;
-  const statsPending = codeFrequencyResult.pending || commitActivityResult.pending;
-
+  const statsPending = codeFrequencyResult.pending;
   // Code frequency is an array of [timestamp, additions, deletions]
   let recentCodeFrequency = [0, 0, 0];
   if (codeFrequency && codeFrequency.length > 0) {
@@ -100,7 +98,6 @@ export async function GET(_: Request, { params }: Params) {
     contributors: contributors ? contributors.length : 0,
     languages: languages ? Object.keys(languages).slice(0, 3) : [], // Top 3 languages
     // Pass raw data for activity if needed, or summary
-    commitActivity: commitActivityResult.data || [],
     punchCard: punchCard || [],
   });
 }
