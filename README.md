@@ -214,7 +214,10 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 SESSION_SECRET=replace_with_a_long_random_secret
 DATABASE_URL=your_neon_connection_string
 GITHUB_WEBHOOK_SECRET=your_webhook_secret
+GITHUB_ARTIFACTS_TOKEN=your_fine_grained_pat_with_actions_read
 ```
+
+`GITHUB_ARTIFACTS_TOKEN` is a fine-grained personal access token with `actions: read` on the repositories being scanned. It's used server-side, in the background, to download the Trivy/Semgrep scan artifacts after a run completes and post the findings (CVE IDs, affected packages, fixed versions) into the repository's chat. If it's not set, scan status still posts as before, just without the detailed findings message.
 
 The GitHub OAuth callback for local development is:
 

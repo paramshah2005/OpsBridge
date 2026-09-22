@@ -65,29 +65,40 @@ jobs:
       # exit-code: 1    -> the step (and therefore the job/check) fails with a
       #                     non-zero exit code if any HIGH/CRITICAL finding is
       #                     present; if none are found, the step exits 0.
-      # output:         -> writes a human-readable table report to a file so it
-      #                     can be uploaded as an artifact regardless of the
-      #                     step's pass/fail outcome.
+      # output:         -> writes a machine-readable JSON report to a file
+      #                     (Results[].Vulnerabilities[], with VulnerabilityID/
+      #                     PkgName/InstalledVersion/FixedVersion/Severity) so
+      #                     it can be uploaded as an artifact and parsed by
+      #                     OpsBridge, regardless of the step's pass/fail
+      #                     outcome.
       - name: Run Trivy filesystem & dependency scan
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
           scan-type: fs
           scan-ref: .
           scanners: vuln,misconfig
-          format: table
-          output: trivy-report.txt
+          format: json
+          output: trivy-report.json
           severity: HIGH,CRITICAL
           exit-code: 1
           ignore-unfixed: false
 
-      # `output: trivy-report.txt` above sends the table to a file, not the
-      # job log, so a failed run otherwise just shows a bare "exit code 1"
-      # with no indication of what was found. Print it into the log too so
-      # reviewers don't have to download the artifact just to see why the
-      # check failed. This step always runs, even after the scan step fails.
-      - name: Print Trivy report to the job log
+      # `output: trivy-report.json` above sends full finding detail to a file,
+      # not the job log — a failed run otherwise just shows a bare
+      # "exit code 1" with no indication of what was found. Print a
+      # human-readable summary into the log too, so reviewers don't have to
+      # download the artifact just to see why the check failed. This step
+      # always runs, even after the scan step fails.
+      - name: Print Trivy findings to the job log
         if: always()
-        run: cat trivy-report.txt
+        run: |
+          if [ -s trivy-report.json ]; then
+            echo "Trivy findings (HIGH/CRITICAL):"
+            jq -r '.Results[]? | .Target as $t | .Vulnerabilities[]? | "- \($t)  [\(.VulnerabilityID)] \(.PkgName) \(.InstalledVersion) -> \(.FixedVersion // "no fix") (\(.Severity))\n    \(.Title // "")"' trivy-report.json \
+              || cat trivy-report.json
+          else
+            echo "No trivy-report.json found (scan may not have run)."
+          fi
 
       # Always upload the report, even when the scan step above fails the job,
       # so reviewers can see exactly what was found.
@@ -96,6 +107,6 @@ jobs:
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: opsbridge-trivy-report
-          path: trivy-report.txt
+          path: trivy-report.json
           retention-days: 30
           if-no-files-found: warn

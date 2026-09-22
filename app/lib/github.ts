@@ -145,6 +145,26 @@ export async function createPullRequest(token: string, repository: GitHubReposit
   return (await response.json()) as { number: number; html_url: string; title: string };
 }
 
+export type GitHubArtifact = { id: number; name: string };
+
+export async function getWorkflowRunArtifacts(token: string, owner: string, repo: string, runId: number) {
+  const response = await fetch(`https://api.github.com/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/actions/runs/${runId}/artifacts`, { headers: headers(token), cache: "no-store" });
+  if (!response.ok) throw await githubError(response, "GitHub could not load workflow run artifacts.");
+  const data = (await response.json()) as { artifacts?: GitHubArtifact[] };
+  return data.artifacts || [];
+}
+
+export async function downloadArtifactText(token: string, owner: string, repo: string, artifactId: number) {
+  const response = await fetch(`https://api.github.com/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/actions/artifacts/${artifactId}/zip`, { headers: headers(token), cache: "no-store" });
+  if (!response.ok) throw await githubError(response, "GitHub could not download the workflow artifact.");
+  const buffer = Buffer.from(await response.arrayBuffer());
+  const AdmZip = (await import("adm-zip")).default;
+  const zip = new AdmZip(buffer);
+  const entry = zip.getEntries()[0];
+  if (!entry) throw new Error("The workflow artifact archive was empty.");
+  return entry.getData().toString("utf8");
+}
+
 export async function getBranches(token: string, repository: GitHubRepository) {
   const response = await fetch(`https://api.github.com/repos/${encodeURIComponent(repository.owner.login)}/${encodeURIComponent(repository.name)}/branches?per_page=100`, { headers: headers(token), cache: "no-store" });
   if (!response.ok) throw await githubError(response, "GitHub could not load branches.");

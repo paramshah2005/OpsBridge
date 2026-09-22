@@ -19,6 +19,7 @@ const legacyActivityEmoji = /^[📦🔵🟣⚪🌱🗑️🤖↑⇄⑂]\s*/u;
 function isCommandResult(message: Message) {
   if (message.messageType !== "system_message") return false;
   return message.authorLogin === "opsbridge-command"
+    || message.authorLogin === "opsbridge-scan"
     || message.content.startsWith("/")
     || message.content.startsWith("Usage:")
     || message.content.startsWith("Unknown command:")
