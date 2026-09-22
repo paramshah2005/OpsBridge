@@ -124,8 +124,8 @@
 .feed-action {
   width: 100%;
   border: 0;
-  background: #d5ff62;
-  color: #19230e;
+  background: #72bc44;
+  color: #17230e;
   padding: 11px;
   font: 700 11px 'DM Mono';
   cursor: pointer
@@ -192,6 +192,11 @@
   margin-bottom: 15px
 }
 
+.dark-eyebrow .pulse {
+  background: #72bc44;
+  box-shadow: 0 0 0 4px #72bc4415
+}
+
 .chat-heading h1 {
   font: 600 52px/.98 'Space Grotesk';
   letter-spacing: -.07em;
@@ -256,8 +261,8 @@
 }
 
 .message-avatar {
-  background: #d5ff62;
-  color: #233114;
+  background: #72bc44;
+  color: #17230e;
   width: 32px;
   height: 32px;
   display: flex;
@@ -294,7 +299,7 @@
 }
 
 .system-message {
-  border-left: 2px solid #d5ff62;
+  border-left: 2px solid #72bc44;
   padding-left: 11px
 }
 
@@ -323,8 +328,8 @@
 
 .composer button {
   border: 0;
-  background: #d5ff62;
-  color: #19230e;
+  background: #72bc44;
+  color: #17230e;
   padding: 0 20px;
   font-weight: 700;
   cursor: pointer
