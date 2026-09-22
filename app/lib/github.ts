@@ -145,6 +145,13 @@ export async function createPullRequest(token: string, repository: GitHubReposit
   return (await response.json()) as { number: number; html_url: string; title: string };
 }
 
+export async function getBranches(token: string, repository: GitHubRepository) {
+  const response = await fetch(`https://api.github.com/repos/${encodeURIComponent(repository.owner.login)}/${encodeURIComponent(repository.name)}/branches?per_page=100`, { headers: headers(token), cache: "no-store" });
+  if (!response.ok) throw await githubError(response, "GitHub could not load branches.");
+  const branches = (await response.json()) as Array<{ name: string }>;
+  return branches.map((branch) => branch.name);
+}
+
 export async function getRepositoryStats(token: string, repository: GitHubRepository) {
   const response = await fetch(`https://api.github.com/repos/${encodeURIComponent(repository.owner.login)}/${encodeURIComponent(repository.name)}`, { headers: headers(token), cache: "no-store" });
   if (!response.ok) throw await githubError(response, "GitHub could not load repository status.");
