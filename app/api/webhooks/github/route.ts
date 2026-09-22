@@ -2,8 +2,26 @@ import { NextResponse } from "next/server";
 import { getDb } from "../../../lib/db";
 import { broadcastToRoom } from "../../../lib/realtime";
 import { hasValidWebhookSignature, normalizeWebhookEvent } from "../../../lib/webhooks";
+import { downloadArtifactText, getWorkflowRunArtifacts } from "../../../lib/github";
+import { formatScanFindingsMessage, parseSemgrepFindings, parseTrivyFindings } from "../../../lib/scanResults";
 
 export const runtime = "nodejs";
+
+const artifactNames = { trivy: "opsbridge-trivy-report", semgrep: "opsbridge-semgrep-report" } as const;
+
+async function postScanFindings(repoId: number, owner: string, repo: string, workflowKey: "trivy" | "semgrep", runId: number, runUrl: string | null) {
+  const token = process.env.GITHUB_ARTIFACTS_TOKEN;
+  if (!token) return;
+  const artifacts = await getWorkflowRunArtifacts(token, owner, repo, runId);
+  const artifact = artifacts.find((candidate) => candidate.name === artifactNames[workflowKey]);
+  if (!artifact) return;
+  const reportText = await downloadArtifactText(token, owner, repo, artifact.id);
+  const findings = workflowKey === "trivy" ? parseTrivyFindings(reportText) : parseSemgrepFindings(reportText);
+  if (findings.length === 0) return;
+  const content = formatScanFindingsMessage(workflowKey, findings, runUrl || `https://github.com/${owner}/${repo}/actions/runs/${runId}`);
+  const rows = await getDb()`INSERT INTO messages (github_repo_id, author_login, content, message_type) VALUES (${repoId}, 'opsbridge-scan', ${content}, 'system_message') RETURNING id, github_repo_id AS "repoId", author_login AS "authorLogin", content, message_type AS "messageType", created_at AS "createdAt"`;
+  broadcastToRoom(String(repoId), { type: "message", message: rows[0] });
+}
 
 export async function POST(request: Request) {
   const rawBody = Buffer.from(await request.arrayBuffer());
@@ -46,6 +64,18 @@ export async function POST(request: Request) {
           url: normalized.workflowUrl,
         },
       });
+    }
+    if (normalized.workflowKey && normalized.action === "completed" && normalized.workflowRunId) {
+      const repoPayload = payload.repository as { owner?: { login?: unknown }; name?: unknown } | undefined;
+      const owner = typeof repoPayload?.owner?.login === "string" ? repoPayload.owner.login : null;
+      const name = typeof repoPayload?.name === "string" ? repoPayload.name : null;
+      if (owner && name) {
+        try {
+          await postScanFindings(repoId, owner, name, normalized.workflowKey, normalized.workflowRunId, normalized.workflowUrl);
+        } catch (error) {
+          console.error("Failed to post scan findings", error);
+        }
+      }
     }
     if (!normalized.message) {
       await db`UPDATE webhook_events SET processing_status = 'ignored', processed_at = now(), processing_error = NULL WHERE id = ${eventId}`;
