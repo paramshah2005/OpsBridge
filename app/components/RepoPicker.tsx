@@ -53,8 +53,8 @@ export default function RepoPicker({ session }: { session: Session }) {
       <section className="repos-main">
         <div className="section-intro">
           <div>
-            <p className="eyebrow">
-              <span className="pulse" /> M1 · REPOSITORY PICKER
+            <p className="eyebrow dark-eyebrow">
+              <span className="pulse" /> REPOSITORY PICKER
             </p>
             <h1>Your repositories.</h1>
             <p className="section-lede">
