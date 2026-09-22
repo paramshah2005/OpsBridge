@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import { createPullRequest, dispatchWorkflow, getContributors, getGitHubRepository, getLatestCommit, getLatestWorkflowRuns, getOpenPullRequests, getRecentlyMergedPullRequest, getRepositoryStats } from "../../../../lib/github";
+import { createPullRequest, dispatchWorkflow, getBranches, getContributors, getGitHubRepository, getLatestCommit, getLatestWorkflowRuns, getOpenPullRequests, getRecentlyMergedPullRequest, getRepositoryStats } from "../../../../lib/github";
 import { commandDefinitions, helpText, parseCommand } from "../../../../lib/commands";
 import { broadcastToRoom } from "../../../../lib/realtime";
 import { decryptAccessToken, getSession } from "../../../../lib/session";
@@ -45,6 +45,9 @@ export async function POST(request: Request, { params }: Params) {
         const pullRequest = await createPullRequest(token, repository, command.args[0], command.args[1], command.args[2]);
         result = `Pull request #${pullRequest.number} created: ${pullRequest.title}\n${pullRequest.html_url}`;
       }
+    } else if (command.name === "branch") {
+      const branches = await getBranches(token, repository);
+      result = branches.length ? `Branches (${branches.length}):\n${branches.map((branch) => `• ${branch}${branch === (repository.default_branch || "main") ? " (default)" : ""}`).join("\n")}` : "No branches found.";
     } else if (command.name === "status") {
       const [stats, pullRequests, latestCommit, recentlyMerged, contributors, workflowRuns, feedRows] = await Promise.all([
         getRepositoryStats(token, repository),

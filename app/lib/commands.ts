@@ -5,6 +5,7 @@ export const commandDefinitions: CommandDefinition[] = [
   { name: "rerun-semgrep", usage: "/rerun-semgrep", description: "Rerun the Semgrep security scan." },
   { name: "raise-pr", usage: '/raise-pr <head> <base> "<title>"', description: "Create a pull request." },
   { name: "status", usage: "/status", description: "Show repository statistics." },
+  { name: "branch", usage: "/branch", description: "List the repository's branches." },
   { name: "help", usage: "/help", description: "List available commands." },
 ];
 
