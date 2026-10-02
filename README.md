@@ -266,12 +266,61 @@ The definitive WebSocket test should be performed through the Vercel deployment 
 6. Use `application/json` as the webhook content type and configure the same secret in GitHub and Vercel.
 7. Push to the connected GitHub repository. Vercel automatically builds and deploys the application.
 
+## Multi-user and external repository setup
+
+Other GitHub users can sign in to the deployed application with the configured GitHub OAuth app. After authorization, OpsBridge can list repositories that they own, collaborate on, or can access through an organization. Organization owners may need to approve the OAuth app before organization repositories become available.
+
+Basic repository features, including statistics, chat, branch information, pull-request commands, and check results, use the signed-in user's GitHub permissions. Creating pull requests or rerunning workflows requires write access to the selected repository.
+
+### Repository requirements
+
+Each repository that uses the complete OpsBridge integration must have:
+
+1. GitHub Actions enabled.
+2. The security workflows copied into `.github/workflows/`:
+
+   ```text
+   opsbridge-trivy.yml
+   opsbridge-semgrep.yml
+   ```
+
+3. A repository administrator initialize the activity feed from the OpsBridge workspace. OpsBridge then creates the signed GitHub webhook automatically.
+4. The deployment forwarding workflow installed when deployment updates are required:
+
+   ```text
+   vercel-webhook.yml
+   ```
+
+5. A repository Actions secret named `MY_WEBHOOK_URL` containing:
+
+   ```text
+   https://your-domain.vercel.app/api/webhooks/deployment-status
+   ```
+
+### Workflow artifact access
+
+Detailed Trivy and Semgrep findings currently use the server-side `GITHUB_ARTIFACTS_TOKEN` to download workflow artifacts. A token owned by the OpsBridge operator does not automatically have access to another user's private repositories. In that situation, workflow status messages may still appear, but detailed CVE and finding reports cannot be downloaded.
+
+For a production multi-user deployment, replace the shared personal access token with a GitHub App. Users can install the app on selected repositories, and OpsBridge can use short-lived installation tokens for repository-scoped webhook, workflow, and artifact access.
+
+### Multi-user security limitations
+
+Before exposing the current application as a public multi-tenant service, complete these authorization changes:
+
+- Verify GitHub repository access in both message endpoints before reading or writing chat history.
+- Authenticate WebSocket connections and authorize every repository room join.
+- Replace the shared artifact token with GitHub App installation tokens.
+- Add durable users, connected repositories, and repository-membership records.
+- Rate-limit messages, commands, OAuth attempts, and webhook initialization.
+
+Until these controls are implemented, deploy OpsBridge only for a trusted group of users and repositories.
+
 ## Security model
 
 - GitHub access tokens remain server-side in encrypted, HttpOnly cookies.
 - OAuth state protects the login callback from request forgery.
 - Webhook signatures are verified before GitHub events are processed.
-- Repository access is checked against the signed-in GitHub user.
+- GitHub-backed repository and command routes check access against the signed-in GitHub user; message and WebSocket authorization still require the multi-user hardening described above.
 - Messages and security results are scoped by GitHub repository ID.
 - Secrets are stored in environment variables, never committed to the repository.
 - GitHub Actions checks and branch protection enforce the merge gate.
