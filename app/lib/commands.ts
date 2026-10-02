@@ -16,7 +16,10 @@ export const commandDefinitions: CommandDefinition[] = [
 export function parseCommand(input: string) {
   const trimmed = input.trim();
   if (!trimmed.startsWith("/")) return null;
-  const tokens = [...trimmed.matchAll(/"([^"\\]*(?:\\.[^"\\]*)*)"|'([^']*)'|(\S+)/g)].map((match) => match[1] ?? match[2] ?? match[3] ?? "");
+  const tokens = [...trimmed.matchAll(/"([^"\\]*(?:\\.[^"\\]*)*)"|'([^']*)'|(\S+)/g)].map((match) => {
+    if (match[1] !== undefined) return match[1].replace(/\\(["\\])/g, "$1");
+    return match[2] ?? match[3] ?? "";
+  });
   const name = tokens.shift()?.slice(1).toLowerCase() || "";
   return { name, args: tokens };
 }
