@@ -4,7 +4,8 @@ export type GitHubRepository = {
   full_name: string;
   owner: { login: string };
   default_branch?: string;
-  permissions?: { admin?: boolean };
+  permissions?: { admin?: boolean; maintain?: boolean; push?: boolean; triage?: boolean; pull?: boolean };
+  role_name?: string;
 };
 
 export type GitHubWorkflowRun = {
@@ -23,10 +24,42 @@ export type GitHubPullRequest = {
   title: string;
   html_url: string;
   user?: { login?: string };
-  head?: { ref?: string };
+  state?: string;
+  draft?: boolean;
+  merged?: boolean;
+  mergeable?: boolean | null;
+  mergeable_state?: string;
+  head?: { ref?: string; sha?: string };
   base?: { ref?: string };
+  commits?: number;
+  changed_files?: number;
+  additions?: number;
+  deletions?: number;
+  created_at?: string;
   updated_at?: string;
   merged_at?: string | null;
+};
+
+export type GitHubCheckRun = {
+  id: number;
+  name: string;
+  status: string;
+  conclusion: string | null;
+  html_url: string | null;
+};
+
+export type GitHubCommitStatus = {
+  id: number;
+  context: string;
+  state: string;
+  target_url: string | null;
+  description: string | null;
+};
+
+export type GitHubUser = {
+  login: string;
+  name: string | null;
+  html_url: string;
 };
 
 export type GitHubCommit = {
@@ -65,6 +98,32 @@ export async function getOpenPullRequests(token: string, repository: GitHubRepos
   const response = await fetch(`https://api.github.com/repos/${encodeURIComponent(repository.owner.login)}/${encodeURIComponent(repository.name)}/pulls?state=open&per_page=100`, { headers: headers(token), cache: "no-store" });
   if (!response.ok) throw new Error("GitHub could not load pull requests.");
   return (await response.json()) as GitHubPullRequest[];
+}
+
+export async function getPullRequest(token: string, repository: GitHubRepository, pullNumber: number) {
+  const response = await fetch(`https://api.github.com/repos/${encodeURIComponent(repository.owner.login)}/${encodeURIComponent(repository.name)}/pulls/${pullNumber}`, { headers: headers(token), cache: "no-store" });
+  if (response.status === 404) return null;
+  if (!response.ok) throw await githubError(response, "GitHub could not load the pull request.");
+  return (await response.json()) as GitHubPullRequest;
+}
+
+export async function getCommitChecks(token: string, repository: GitHubRepository, ref: string) {
+  const baseUrl = `https://api.github.com/repos/${encodeURIComponent(repository.owner.login)}/${encodeURIComponent(repository.name)}/commits/${encodeURIComponent(ref)}`;
+  const [checksResponse, statusesResponse] = await Promise.all([
+    fetch(`${baseUrl}/check-runs?per_page=100`, { headers: headers(token), cache: "no-store" }),
+    fetch(`${baseUrl}/status`, { headers: headers(token), cache: "no-store" }),
+  ]);
+  if (!checksResponse.ok) throw await githubError(checksResponse, "GitHub could not load check runs.");
+  if (!statusesResponse.ok) throw await githubError(statusesResponse, "GitHub could not load commit statuses.");
+  const checksData = (await checksResponse.json()) as { check_runs?: GitHubCheckRun[] };
+  const statusesData = (await statusesResponse.json()) as { statuses?: GitHubCommitStatus[] };
+  return { checkRuns: checksData.check_runs || [], statuses: statusesData.statuses || [] };
+}
+
+export async function getAuthenticatedUser(token: string) {
+  const response = await fetch("https://api.github.com/user", { headers: headers(token), cache: "no-store" });
+  if (!response.ok) throw await githubError(response, "GitHub could not load the authenticated user.");
+  return (await response.json()) as GitHubUser;
 }
 
 export async function getRecentlyMergedPullRequest(token: string, repository: GitHubRepository) {
