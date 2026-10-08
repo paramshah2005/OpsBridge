@@ -48,7 +48,7 @@ export async function POST(request: Request) {
     if (!inserted[0]) return NextResponse.json({ ok: true, duplicate: true });
 
     const messageContent = `Vercel deployment succeeded\n${environment}${refName ? `\nBranch: ${refName}` : ""}${commitSha ? `\nCommit: ${commitSha.slice(0, 7)}` : ""}${targetUrl ? `\n${targetUrl}` : ""}`;
-    const messages = await db`INSERT INTO messages (github_repo_id, author_login, content, message_type) VALUES (${repoId}, 'opsbridge-deploy', ${messageContent}, 'system_message') RETURNING id, github_repo_id AS "repoId", author_login AS "authorLogin", content, message_type AS "messageType", created_at AS "createdAt"`;
+    const messages = await db`INSERT INTO messages (github_repo_id, author_login, content, message_type, message_category) VALUES (${repoId}, 'opsbridge-deploy', ${messageContent}, 'system_message', 'deployment') RETURNING id, github_repo_id AS "repoId", author_login AS "authorLogin", content, message_type AS "messageType", message_category AS "messageCategory", created_at AS "createdAt"`;
     const message = messages[0];
     await db`UPDATE deployment_status_events SET message_id = ${message.id} WHERE id = ${inserted[0].id}`;
     const occurredAt = new Date().toISOString();

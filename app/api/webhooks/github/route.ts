@@ -19,7 +19,7 @@ async function postScanFindings(repoId: number, owner: string, repo: string, wor
   const findings = workflowKey === "trivy" ? parseTrivyFindings(reportText) : parseSemgrepFindings(reportText);
   if (findings.length === 0) return;
   const content = formatScanFindingsMessage(workflowKey, findings, runUrl || `https://github.com/${owner}/${repo}/actions/runs/${runId}`);
-  const rows = await getDb()`INSERT INTO messages (github_repo_id, author_login, content, message_type) VALUES (${repoId}, 'opsbridge-scan', ${content}, 'system_message') RETURNING id, github_repo_id AS "repoId", author_login AS "authorLogin", content, message_type AS "messageType", created_at AS "createdAt"`;
+  const rows = await getDb()`INSERT INTO messages (github_repo_id, author_login, content, message_type, message_category) VALUES (${repoId}, 'opsbridge-scan', ${content}, 'system_message', 'security') RETURNING id, github_repo_id AS "repoId", author_login AS "authorLogin", content, message_type AS "messageType", message_category AS "messageCategory", created_at AS "createdAt"`;
   broadcastToRoom(String(repoId), { type: "message", message: rows[0] });
 }
 
@@ -81,7 +81,7 @@ export async function POST(request: Request) {
       await db`UPDATE webhook_events SET processing_status = 'ignored', processed_at = now(), processing_error = NULL WHERE id = ${eventId}`;
       return NextResponse.json({ ok: true, ignored: true });
     }
-    const messages = await db`INSERT INTO messages (github_repo_id, author_login, content, message_type) VALUES (${repoId}, 'opsbridge-bot', ${normalized.message}, 'system_message') RETURNING id, github_repo_id AS "repoId", author_login AS "authorLogin", content, message_type AS "messageType", created_at AS "createdAt"`;
+    const messages = await db`INSERT INTO messages (github_repo_id, author_login, content, message_type, message_category) VALUES (${repoId}, 'opsbridge-bot', ${normalized.message}, 'system_message', 'activity') RETURNING id, github_repo_id AS "repoId", author_login AS "authorLogin", content, message_type AS "messageType", message_category AS "messageCategory", created_at AS "createdAt"`;
     const message = messages[0];
     await db`UPDATE webhook_events SET processing_status = 'processed', message_id = ${message.id}, processed_at = now(), processing_error = NULL WHERE id = ${eventId}`;
     broadcastToRoom(String(repoId), { type: "message", message });

@@ -4,6 +4,8 @@ CREATE TABLE IF NOT EXISTS messages (
   author_login TEXT NOT NULL,
   content TEXT NOT NULL CHECK (char_length(content) BETWEEN 1 AND 2000),
   message_type TEXT NOT NULL DEFAULT 'user_message',
+  message_category TEXT NOT NULL DEFAULT 'general'
+    CHECK (message_category IN ('general', 'activity', 'security', 'deployment')),
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
@@ -70,3 +72,8 @@ CREATE TABLE IF NOT EXISTS deployment_status_events (
 
 CREATE INDEX IF NOT EXISTS deployment_status_events_repo_occurred_idx
   ON deployment_status_events (github_repo_id, occurred_at DESC);
+
+-- Backfill message_category for existing bot messages
+UPDATE messages SET message_category = 'activity' WHERE author_login = 'opsbridge-bot' AND message_category = 'general';
+UPDATE messages SET message_category = 'security' WHERE author_login = 'opsbridge-scan' AND message_category = 'general';
+UPDATE messages SET message_category = 'deployment' WHERE author_login = 'opsbridge-deploy' AND message_category = 'general';

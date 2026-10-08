@@ -296,6 +296,75 @@
   cursor: pointer
 }
 
+/* Bot category sections */
+.bot-category-section {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid #e5e9df
+}
+
+.bot-category-section:first-child {
+  margin-top: 16px;
+  border-top: 0;
+  padding-top: 0
+}
+
+.bot-category-label {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font: 10px 'DM Mono';
+  letter-spacing: .08em;
+  color: #879087;
+  margin-bottom: 10px
+}
+
+.bot-category-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex: none
+}
+
+.bot-category-dot--activity { background: #72bc44 }
+.bot-category-dot--security { background: #d4a017 }
+.bot-category-dot--deployment { background: #4a90d9 }
+
+/* Category-specific icon backgrounds */
+.bot-message-icon--activity {
+  background: #263025;
+  color: #a8e063
+}
+
+.bot-message-icon--security {
+  background: #3d2e0a;
+  color: #f0d264
+}
+
+.bot-message-icon--deployment {
+  background: #0e2540;
+  color: #7ec8f0
+}
+
+/* Category-specific left border accent */
+.bot-message--activity {
+  border-left: 2px solid #72bc44
+}
+
+.bot-message--security {
+  border-left: 2px solid #d4a017
+}
+
+.bot-message--deployment {
+  border-left: 2px solid #4a90d9
+}
+
+.bot-empty {
+  margin: 6px 0 0;
+  color: #99a299;
+  font: 10px 'DM Mono'
+}
+
 .chat-main {
   min-width: 0;
   background: transparent
