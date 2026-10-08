@@ -73,11 +73,6 @@ export default function DeploymentPanel({ deployments }: Props) {
 
   return (
     <div className="scan-lower">
-      <div className="deployment-panel-heading">
-        <span className="sidebar-label">DEPLOYMENTS</span>
-        <small>Cloud providers</small>
-      </div>
-
       <div className="deployment-provider-tabs" aria-label="Deployment providers">
         {providers.map((item) => {
           const Icon = item.icon;
@@ -100,7 +95,6 @@ export default function DeploymentPanel({ deployments }: Props) {
 
       {provider === "vercel" ? (
         <div className="deployment-provider-content">
-          <p className="deployment-provider-caption">Vercel via GitHub Actions</p>
           {deployments.length === 0 ? (
             <p className="deployment-empty">
               No successful deployments received yet.

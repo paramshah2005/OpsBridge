@@ -786,12 +786,6 @@
   outline-offset: 2px
 }
 
-.deployment-provider-caption {
-  margin: 0 0 10px;
-  color: #879087;
-  font: 10px 'DM Mono'
-}
-
 .deployment-coming-soon {
   min-height: 132px;
   display: flex;
