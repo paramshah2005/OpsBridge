@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type CSSProperties } from "react";
 import { FaAws } from "react-icons/fa";
 import { SiRender, SiVercel } from "react-icons/si";
 import { TbBrandAzure } from "react-icons/tb";
@@ -30,9 +30,24 @@ function deploymentTime(value: string): string {
   return `${Math.floor(seconds / 86400)}d ago`;
 }
 
-function DeploymentCard({ deployment }: { deployment: Deployment }) {
+function DeploymentCard({
+  deployment,
+  index,
+}: {
+  deployment: Deployment;
+  index: number;
+}) {
   return (
-    <article className="deployment-card">
+    <article
+      className="deployment-card"
+      style={
+        {
+          "--deployment-offset": `${index * 76}px`,
+          "--deployment-scale": `${1 - index * 0.045}`,
+          "--deployment-opacity": `${1 - index * 0.2}`,
+        } as CSSProperties
+      }
+    >
       <div className="deployment-heading">
         <div>
           <strong>{deployment.environment}</strong>
@@ -101,10 +116,11 @@ export default function DeploymentPanel({ deployments }: Props) {
             </p>
           ) : (
             <div className="deployment-list">
-              {deployments.map((deployment) => (
+              {deployments.map((deployment, index) => (
                 <DeploymentCard
                   key={deployment.deploymentId}
                   deployment={deployment}
+                  index={index}
                 />
               ))}
             </div>

@@ -818,14 +818,43 @@
 }
 
 .deployment-list {
-  display: grid;
-  gap: 10px
+  position: relative;
+  height: 224px;
+  margin: 0 2px;
+  overflow: hidden
 }
 
 .deployment-card {
+  position: absolute;
+  inset: 0;
+  box-sizing: border-box;
+  height: 86px;
   padding: 12px;
+  overflow: hidden;
   background: #fbfcf8;
-  border: 1px solid #dfe3dc
+  border: 1px solid #dfe3dc;
+  border-radius: 8px;
+  box-shadow: 0 5px 12px rgba(30, 45, 28, .08);
+  transform: translateY(var(--deployment-offset)) scale(var(--deployment-scale));
+  transform-origin: top center;
+  opacity: var(--deployment-opacity);
+  transition: transform 280ms ease, opacity 280ms ease, box-shadow 280ms ease
+}
+
+.deployment-card:first-child {
+  --deployment-offset: 0px !important;
+  z-index: 4;
+  box-shadow: 0 9px 20px rgba(30, 45, 28, .14)
+}
+
+.deployment-card:nth-child(2) {
+  --deployment-offset: 72px !important;
+  z-index: 3
+}
+
+.deployment-card:nth-child(3) {
+  --deployment-offset: 144px !important;
+  z-index: 2
 }
 
 .deployment-heading {
@@ -882,6 +911,12 @@
 .deployment-empty {
   color: #798279;
   font: 11px/1.5 'DM Mono'
+}
+
+@media(prefers-reduced-motion:reduce) {
+  .deployment-card {
+    transition: none
+  }
 }
 
 /* RepoStats Styles */
