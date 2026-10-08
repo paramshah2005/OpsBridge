@@ -829,7 +829,7 @@
   inset: 0;
   box-sizing: border-box;
   height: 86px;
-  padding: 12px;
+  padding: 10px 11px;
   overflow: hidden;
   background: #fbfcf8;
   border: 1px solid #dfe3dc;
@@ -864,18 +864,28 @@
   gap: 8px
 }
 
+.deployment-heading>div {
+  min-width: 0;
+  flex: 1
+}
+
 .deployment-heading strong {
   display: block;
   font: 600 13px 'Space Grotesk';
-  text-transform: capitalize
+  text-transform: capitalize;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap
 }
 
 .deployment-heading small {
   display: block;
-  margin-top: 4px;
+  margin-top: 2px;
   color: #798279;
   font: 10px 'DM Mono';
-  overflow-wrap: anywhere
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap
 }
 
 .deployment-status {
@@ -891,11 +901,18 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-top: 10px;
-  padding-top: 9px;
+  margin-top: 7px;
+  padding-top: 7px;
   border-top: 1px solid #edf0eb;
   color: #687268;
   font: 9px 'DM Mono'
+}
+
+.deployment-meta>span:first-child {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap
 }
 
 .deployment-meta time {
