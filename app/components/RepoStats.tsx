@@ -11,6 +11,18 @@ type Stats = {
   languages: string[];
 };
 
+function StatsHeader() {
+  return (
+    <div className="activity-title repo-stats-title">
+      <span>RS</span>
+      <div>
+        <strong>Repository stats</strong>
+        <small>Key metrics for this repository</small>
+      </div>
+    </div>
+  );
+}
+
 export default function RepoStats({ repoId }: { repoId: string }) {
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -23,50 +35,44 @@ export default function RepoStats({ repoId }: { repoId: string }) {
         if (!response.ok) throw new Error();
         const data = await response.json();
         setStats(data);
-      } catch (err) {
+        setError(false);
+      } catch {
         setError(true);
       } finally {
         setLoading(false);
       }
     };
-    fetchStats();
-    
-    // Poll every 60 seconds to keep stats fresh
-    const interval = setInterval(fetchStats, 60000);
-    return () => clearInterval(interval);
+    void fetchStats();
+    const interval = window.setInterval(fetchStats, 60_000);
+    return () => window.clearInterval(interval);
   }, [repoId]);
 
   if (loading) {
     return (
       <div className="repo-stats-container">
-        <div className="activity-title" style={{ marginBottom: 16 }}>
-          <span>RS</span>
-          <div>
-            <strong>Repository stats</strong>
-            <small>Key metrics for this repository</small>
-          </div>
-        </div>
+        <StatsHeader />
         <div className="stats-grid">
-          <div className="stat-box skeleton"></div>
-          <div className="stat-box skeleton"></div>
-          <div className="stat-box skeleton"></div>
+          <div className="stat-box skeleton" />
+          <div className="stat-box skeleton" />
+          <div className="stat-box skeleton" />
         </div>
       </div>
     );
   }
 
-  if (error || !stats) return null;
+  if (error || !stats) {
+    return (
+      <div className="repo-stats-container repo-stats-error" role="status">
+        <span className="sidebar-label">REPOSITORY STATS</span>
+        <strong>Stats unavailable</strong>
+        <small>The next refresh will retry automatically.</small>
+      </div>
+    );
+  }
 
   return (
     <div className="repo-stats-container">
-      <div className="activity-title" style={{ marginBottom: 16 }}>
-        <span>RS</span>
-        <div>
-          <strong>Repository stats</strong>
-          <small>Key metrics for this repository</small>
-        </div>
-      </div>
-      
+      <StatsHeader />
       <div className="stats-grid">
         <div className="stat-box">
           <span className="stat-value">{stats.activeBranches}</span>
@@ -81,7 +87,6 @@ export default function RepoStats({ repoId }: { repoId: string }) {
           <span className="stat-label">Contributors</span>
         </div>
       </div>
-      
       <div className="stat-row">
         <span className="stat-label">Weekly Activity</span>
         {stats.statsPending ? (
@@ -99,7 +104,9 @@ export default function RepoStats({ repoId }: { repoId: string }) {
           <span className="stat-label">Top Languages</span>
           <div className="lang-tags">
             {stats.languages.map((lang) => (
-              <span key={lang} className="lang-tag">{lang}</span>
+              <span key={lang} className="lang-tag">
+                {lang}
+              </span>
             ))}
           </div>
         </div>

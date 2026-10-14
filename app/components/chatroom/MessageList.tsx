@@ -20,11 +20,33 @@ export default function MessageList({ messages, loading, login }: Props) {
   const endRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    endRef.current?.scrollIntoView({ behavior: "smooth" });
+    const panel = endRef.current?.parentElement;
+    if (!panel) return;
+
+    const reduceMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
+    panel.scrollTo({
+      top: panel.scrollHeight,
+      behavior: reduceMotion ? "auto" : "smooth",
+    });
   }, [messages]);
 
   if (loading) {
-    return <div className="chat-state">Loading chat history…</div>;
+    return (
+      <div className="message-loading" role="status">
+        <span className="chat-sr-only">Loading chat history</span>
+        {[0, 1, 2].map((item) => (
+          <div className="message-skeleton" key={item} aria-hidden="true">
+            <i />
+            <span>
+              <b />
+              <b />
+            </span>
+          </div>
+        ))}
+      </div>
+    );
   }
 
   if (messages.length === 0) {

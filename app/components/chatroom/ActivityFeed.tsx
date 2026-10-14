@@ -1,6 +1,5 @@
 "use client";
 
-import { type CSSProperties } from "react";
 import {
   LuActivity,
   LuGitBranch,
@@ -28,7 +27,7 @@ type Props = {
   feedBusy: boolean;
   /** All bot (system_message, non-command) messages — used for the count badge. */
   botMessages: Message[];
-  /** The last 3 bot messages in reverse order, for the stacked card display. */
+  /** The three most recent bot messages, newest first. */
   activityStack: Message[];
   onEnable: () => void;
   onDisable: () => void;
@@ -37,8 +36,7 @@ type Props = {
 /**
  * ActivityFeed
  *
- * Left-sidebar panel that shows GitHub activity bot messages in a stacked-card
- * UI. Handles its own enable / disable CTA display based on feedStatus.
+ * Left-sidebar panel for recent GitHub activity and feed controls.
  */
 export default function ActivityFeed({
   feedStatus,
@@ -77,6 +75,7 @@ export default function ActivityFeed({
               : "Bring GitHub push, pull request, and branch activity into this workspace."}
           </p>
           <button
+            type="button"
             className="feed-action"
             onClick={onEnable}
             disabled={feedBusy}
@@ -102,18 +101,8 @@ export default function ActivityFeed({
               <p className="bot-empty">No activity has arrived yet.</p>
             ) : (
               <div className="bot-stack" aria-live="polite">
-                {activityStack.map((message, index) => (
-                  <article
-                    className="bot-message"
-                    key={message.id}
-                    style={
-                      {
-                        "--stack-offset": `${index * 48}px`,
-                        "--stack-scale": `${1 - index * 0.06}`,
-                        "--stack-opacity": `${1 - index * 0.16}`,
-                      } as CSSProperties
-                    }
-                  >
+                {activityStack.map((message) => (
+                  <article className="bot-message" key={message.id}>
                     <span className="bot-message-icon" aria-hidden="true">
                       <ActivityIcon content={message.content} />
                     </span>
@@ -134,6 +123,7 @@ export default function ActivityFeed({
             )}
           </div>
           <button
+            type="button"
             className="disable-feed"
             onClick={onDisable}
             disabled={feedBusy}

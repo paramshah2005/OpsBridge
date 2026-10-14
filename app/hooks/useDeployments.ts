@@ -3,6 +3,14 @@
 import { useCallback, useEffect, useState } from "react";
 import type { Deployment } from "../components/chatroom/types";
 
+const DEPLOYMENT_HISTORY_LIMIT = 3;
+
+function latestDeployments(deployments: Deployment[]) {
+  return [...deployments]
+    .sort((a, b) => Date.parse(b.occurredAt) - Date.parse(a.occurredAt))
+    .slice(0, DEPLOYMENT_HISTORY_LIMIT);
+}
+
 /**
  * useDeployments
  *
@@ -27,12 +35,10 @@ export function useDeployments(repoId: string) {
       ) {
         return current;
       }
-      return [
+      return latestDeployments([
         ...current.filter((item) => item.deploymentId !== incoming.deploymentId),
         incoming,
-      ]
-        .sort((a, b) => Date.parse(b.occurredAt) - Date.parse(a.occurredAt))
-        .slice(0, 3);
+      ]);
     });
   }, []);
 
@@ -48,9 +54,7 @@ export function useDeployments(repoId: string) {
           byId.set(deployment.deploymentId, deployment);
         }
       }
-      return [...byId.values()]
-        .sort((a, b) => Date.parse(b.occurredAt) - Date.parse(a.occurredAt))
-        .slice(0, 3);
+      return latestDeployments([...byId.values()]);
     });
   }, []);
 

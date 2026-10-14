@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { JetBrains_Mono } from "next/font/google";
+import { useEffect, useState } from "react";
+import { FiArrowLeft } from "react-icons/fi";
 import RaisePrModal from "./RaisePrModal";
 import RepoStats from "./RepoStats";
 import ActivityFeed from "./chatroom/ActivityFeed";
@@ -14,6 +16,69 @@ import { useMessages } from "../hooks/useMessages";
 import { useRepositorySocket } from "../hooks/useRepositorySocket";
 import { useScans } from "../hooks/useScans";
 
+const jetBrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  display: "swap",
+});
+
+function isMessagePanelGesture(event: Event) {
+  return event
+    .composedPath()
+    .some(
+      (target) =>
+        target instanceof Element && target.classList.contains("message-panel")
+    );
+}
+
+function useAutoHidingNavigation() {
+  const [visible, setVisible] = useState(true);
+
+  useEffect(() => {
+    const updateVisibility = (delta: number) => {
+      if (Math.abs(delta) > 3) setVisible(delta < 0);
+    };
+
+    const handleWheel = (event: WheelEvent) => {
+      if (!isMessagePanelGesture(event)) updateVisibility(event.deltaY);
+    };
+
+    let touchStartY = 0;
+    let touchStartedInMessages = false;
+
+    const handleTouchStart = (event: TouchEvent) => {
+      touchStartY = event.touches[0]?.clientY ?? 0;
+      touchStartedInMessages = isMessagePanelGesture(event);
+    };
+
+    const handleTouchMove = (event: TouchEvent) => {
+      const currentY = event.touches[0]?.clientY ?? touchStartY;
+      if (!touchStartedInMessages) updateVisibility(touchStartY - currentY);
+      touchStartY = currentY;
+    };
+
+    const handleTouchEnd = () => {
+      touchStartedInMessages = false;
+    };
+
+    window.addEventListener("wheel", handleWheel, { passive: true });
+    window.addEventListener("touchstart", handleTouchStart, { passive: true });
+    window.addEventListener("touchmove", handleTouchMove, { passive: true });
+    window.addEventListener("touchend", handleTouchEnd, { passive: true });
+    window.addEventListener("touchcancel", handleTouchEnd, { passive: true });
+
+    return () => {
+      window.removeEventListener("wheel", handleWheel);
+      window.removeEventListener("touchstart", handleTouchStart);
+      window.removeEventListener("touchmove", handleTouchMove);
+      window.removeEventListener("touchend", handleTouchEnd);
+      window.removeEventListener("touchcancel", handleTouchEnd);
+    };
+  }, []);
+
+  return { visible, reveal: () => setVisible(true) };
+}
+
 export default function ChatRoom({
   repoId,
   repoName,
@@ -24,6 +89,7 @@ export default function ChatRoom({
   login: string;
 }) {
   const [raisePrOpen, setRaisePrOpen] = useState(false);
+  const navigation = useAutoHidingNavigation();
 
   // ── Custom Hooks for State & Data-Fetching ─────────────────────────────────
   const {
@@ -54,7 +120,11 @@ export default function ChatRoom({
 
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
-    <main className="chat-shell">
+    <main
+      className={`chat-shell ${jetBrainsMono.className}${
+        navigation.visible ? "" : " nav-collapsed"
+      }`}
+    >
       <RaisePrModal
         repoId={repoId}
         open={raisePrOpen}
@@ -62,19 +132,24 @@ export default function ChatRoom({
         onSubmit={submitContent}
       />
 
-      {/* Top navigation bar */}
-      <nav className="topbar chat-topbar">
-        <a className="brand" href="/repos">
-          <span className="brand-mark">✦</span> OpsBridge
+      <header
+        className={navigation.visible ? "chat-topbar" : "chat-topbar nav-hidden"}
+        onFocus={navigation.reveal}
+      >
+        <a className="chat-wordmark" href="/repos" aria-label="OpsBridge repositories">
+          OPSBRIDGE<span>.</span>
         </a>
-        <a className="back-link" href="/repos">
-          ← All repositories
+        <a className="chat-breadcrumb" href="/repos">
+          <FiArrowLeft aria-hidden="true" />
+          <span>All repositories</span>
         </a>
-        <span className="chat-user">@{login}</span>
-      </nav>
+        <div className="chat-session">
+          <small>Repository workspace</small>
+          <strong>@{login}</strong>
+        </div>
+      </header>
 
       <section className="workspace">
-        {/* ── Left sidebar ── */}
         <aside className="chat-sidebar">
           <RepoStats repoId={repoId} />
           <ActivityFeed
@@ -87,13 +162,10 @@ export default function ChatRoom({
           />
         </aside>
 
-        {/* ── Centre: chat ── */}
         <section className="chat-main">
           <div className="chat-heading">
             <div>
-              <p className="eyebrow dark-eyebrow">
-                <span className="live-dot" /> GROUP CHAT
-              </p>
+              <p className="chat-section-label">02 / GROUP CHAT</p>
               <h1>{repoName}</h1>
               <p>Talk with everyone working in this repository.</p>
             </div>
@@ -126,7 +198,6 @@ export default function ChatRoom({
           />
         </section>
 
-        {/* ── Right sidebar ── */}
         <aside
           className="scan-sidebar"
           aria-label="Security scan and deployment status"

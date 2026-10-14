@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type CSSProperties } from "react";
+import { useState } from "react";
 import { FaAws } from "react-icons/fa";
 import { SiRender, SiVercel } from "react-icons/si";
 import { TbBrandAzure } from "react-icons/tb";
@@ -30,24 +30,9 @@ function deploymentTime(value: string): string {
   return `${Math.floor(seconds / 86400)}d ago`;
 }
 
-function DeploymentCard({
-  deployment,
-  index,
-}: {
-  deployment: Deployment;
-  index: number;
-}) {
+function DeploymentCard({ deployment }: { deployment: Deployment }) {
   return (
-    <article
-      className="deployment-card"
-      style={
-        {
-          "--deployment-offset": `${index * 76}px`,
-          "--deployment-scale": `${1 - index * 0.045}`,
-          "--deployment-opacity": `${1 - index * 0.2}`,
-        } as CSSProperties
-      }
-    >
+    <article className="deployment-card">
       <div className="deployment-heading">
         <div>
           <strong>{deployment.environment}</strong>
@@ -79,12 +64,12 @@ type Props = {
 /**
  * DeploymentPanel
  *
- * Right-sidebar bottom section. Switches between deployment providers and
- * renders a card per successful Vercel deployment.
+ * Right-sidebar deployment history with provider switching.
  */
 export default function DeploymentPanel({ deployments }: Props) {
   const [provider, setProvider] = useState<DeploymentProvider>("vercel");
-  const selectedProvider = providers.find((item) => item.key === provider)!;
+  const selectedProvider =
+    providers.find((item) => item.key === provider) ?? providers[0];
 
   return (
     <div className="scan-lower">
@@ -97,7 +82,7 @@ export default function DeploymentPanel({ deployments }: Props) {
               type="button"
               className={`deployment-provider-tab provider-${item.key}`}
               aria-pressed={selected}
-              aria-label={selected ? undefined : item.label}
+              aria-label={item.label}
               key={item.key}
               onClick={() => setProvider(item.key)}
             >
@@ -116,11 +101,10 @@ export default function DeploymentPanel({ deployments }: Props) {
             </p>
           ) : (
             <div className="deployment-list">
-              {deployments.map((deployment, index) => (
+              {deployments.map((deployment) => (
                 <DeploymentCard
                   key={deployment.deploymentId}
                   deployment={deployment}
-                  index={index}
                 />
               ))}
             </div>
