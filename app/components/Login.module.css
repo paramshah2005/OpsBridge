@@ -1,0 +1,735 @@
+.shell {
+  --paper: #f7f7f8;
+  --white: #ffffff;
+  --ink: #111111;
+  --muted: #626262;
+  --rule: #c8c8c8;
+  --signal: #e4002b;
+  min-height: 100svh;
+  overflow: clip;
+  background: var(--paper);
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.shell ::selection {
+  background: var(--signal);
+  color: var(--white);
+}
+
+.shell a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.shell a:focus-visible {
+  outline: 3px solid var(--signal);
+  outline-offset: 4px;
+}
+
+.header {
+  display: grid;
+  grid-template-columns: minmax(190px, 1fr) auto minmax(190px, 1fr);
+  align-items: center;
+  min-height: 84px;
+  padding: 0 3.5vw;
+  border-bottom: 2px solid var(--ink);
+}
+
+.wordmark {
+  width: fit-content;
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+}
+
+.wordmarkStop {
+  color: var(--signal);
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(1.5rem, 3vw, 3rem);
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+}
+
+.nav a,
+.headerCta {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  border-bottom: 2px solid transparent;
+  transition: border-color 160ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.nav a:hover,
+.headerCta:hover {
+  border-bottom-color: var(--signal);
+}
+
+.headerCta {
+  justify-self: end;
+  gap: 0.55rem;
+  font-size: 0.76rem;
+  font-weight: 600;
+}
+
+.hero {
+  display: grid;
+  grid-template-columns: minmax(72px, 0.42fr) minmax(0, 2.15fr) minmax(310px, 1.1fr);
+  min-height: calc(100svh - 84px);
+  border-bottom: 2px solid var(--ink);
+}
+
+.heroIndex {
+  padding: 2rem 1.25rem;
+  border-right: 1px solid var(--rule);
+  color: var(--signal);
+  font-size: 0.74rem;
+  font-weight: 700;
+}
+
+.heroCopy {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  padding: clamp(3rem, 5svh, 4.5rem) clamp(2rem, 5vw, 6rem) clamp(3.5rem, 7svh, 6rem);
+}
+
+.kicker,
+.sectionNumber,
+.inverseNumber,
+.finalCta > p {
+  margin: 0;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  line-height: 1.5;
+  text-transform: uppercase;
+}
+
+.kicker {
+  max-width: 32rem;
+  margin-bottom: clamp(2rem, 4svh, 3rem);
+  color: var(--signal);
+}
+
+.hero h1 {
+  max-width: 920px;
+  margin: 0;
+  font-size: clamp(3.6rem, 7.5vw, 8.5rem);
+  font-weight: 600;
+  letter-spacing: -0.04em;
+  line-height: 0.87;
+  text-wrap: balance;
+}
+
+.heroText {
+  max-width: 670px;
+  margin: clamp(1.8rem, 3.5svh, 3rem) 0 0;
+  font-size: clamp(0.95rem, 1.3vw, 1.15rem);
+  line-height: 1.7;
+}
+
+.heroActions {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  margin-top: 1.75rem;
+}
+
+.primaryCta,
+.finalCtaLink {
+  display: inline-flex;
+  min-height: 58px;
+  align-items: center;
+  justify-content: center;
+  gap: 0.85rem;
+  padding: 0 1.25rem;
+  background: var(--signal);
+  color: var(--white) !important;
+  font-size: 0.78rem;
+  font-weight: 700;
+  transition:
+    transform 160ms cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 160ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.primaryCta svg:last-child,
+.finalCtaLink svg:last-child {
+  margin-left: 1.5rem;
+}
+
+.primaryCta:hover,
+.finalCtaLink:hover {
+  background: #b80022;
+  transform: translateY(-2px);
+}
+
+.primaryCta:active,
+.finalCtaLink:active,
+.headerCta:active {
+  transform: translateY(1px);
+}
+
+.authNote {
+  color: var(--muted);
+  font-size: 0.62rem;
+  line-height: 1.6;
+}
+
+.controlMap {
+  align-self: stretch;
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  justify-content: center;
+  padding: 2rem clamp(1.5rem, 3vw, 3.5rem);
+  border-left: 2px solid var(--ink);
+  background: var(--white);
+}
+
+.mapHeader,
+.mapFooter {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  color: var(--muted);
+  font-size: 0.56rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+}
+
+.mapHeader {
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--ink);
+}
+
+.mapStage {
+  display: grid;
+  grid-template-columns: 3rem 1fr;
+  gap: 1rem;
+  align-items: center;
+  padding: 1.4rem 0;
+  border-top: 1px solid var(--rule);
+}
+
+.mapStageActive {
+  margin-inline: -1rem;
+  padding-inline: 1rem;
+  background: var(--signal);
+  color: var(--white);
+}
+
+.mapNumber {
+  align-self: start;
+  font-size: 0.62rem;
+  font-weight: 700;
+}
+
+.mapStage div {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.mapStage strong {
+  font-size: clamp(1rem, 1.4vw, 1.35rem);
+  font-weight: 600;
+  letter-spacing: -0.04em;
+}
+
+.mapStage div span {
+  color: var(--muted);
+  font-size: 0.63rem;
+  line-height: 1.5;
+}
+
+.mapStageActive div span {
+  color: var(--white);
+}
+
+.mapConnector {
+  height: clamp(2.5rem, 6vh, 4.5rem);
+  padding-left: 1.45rem;
+}
+
+.mapConnector span {
+  display: block;
+  width: 1px;
+  height: 100%;
+  background: var(--signal);
+}
+
+.mapFooter {
+  margin-top: 0.25rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--ink);
+}
+
+.capabilities {
+  display: grid;
+  grid-template-columns: minmax(320px, 0.92fr) 1.6fr;
+  min-height: 760px;
+  border-bottom: 2px solid var(--ink);
+}
+
+.sectionHeading {
+  padding: clamp(4rem, 7vw, 7rem) 3.5vw;
+  border-right: 2px solid var(--ink);
+}
+
+.sectionNumber {
+  color: var(--signal);
+}
+
+.sectionHeading h2,
+.commandIntro h2,
+.workflow h2,
+.finalCta h2 {
+  margin: clamp(4rem, 9vw, 8rem) 0 0;
+  font-size: clamp(2.5rem, 5vw, 5.7rem);
+  font-weight: 600;
+  letter-spacing: -0.04em;
+  line-height: 0.95;
+  text-wrap: balance;
+}
+
+.sectionHeading > p:last-child,
+.commandIntro > p:last-child {
+  max-width: 33rem;
+  margin: 2rem 0 0;
+  color: var(--muted);
+  font-size: 0.86rem;
+  line-height: 1.7;
+}
+
+.capabilityList {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  background: var(--ink);
+  gap: 1px;
+}
+
+.capability {
+  display: grid;
+  grid-template-columns: 3.25rem 1fr;
+  align-content: start;
+  padding: clamp(2rem, 4vw, 4.25rem);
+  background: var(--paper);
+}
+
+.capability > span {
+  color: var(--signal);
+  font-size: 0.66rem;
+  font-weight: 700;
+}
+
+.capability h3 {
+  margin: 0;
+  font-size: clamp(1.25rem, 2vw, 2rem);
+  font-weight: 600;
+  letter-spacing: -0.04em;
+}
+
+.capability p {
+  grid-column: 2;
+  max-width: 31rem;
+  margin: 1.8rem 0 0;
+  color: var(--muted);
+  font-size: 0.76rem;
+  line-height: 1.75;
+}
+
+.commandSection {
+  display: grid;
+  grid-template-columns: minmax(300px, 0.9fr) 1.6fr;
+  background: var(--ink);
+  color: var(--white);
+  border-bottom: 2px solid var(--ink);
+}
+
+.commandIntro {
+  padding: clamp(4rem, 7vw, 7rem) 3.5vw clamp(5rem, 9vw, 9rem);
+  border-right: 1px solid #454545;
+}
+
+.inverseNumber {
+  color: var(--signal);
+}
+
+.commandIntro h2 {
+  margin-top: clamp(3.5rem, 7vw, 6.5rem);
+  font-size: clamp(2.5rem, 3.8vw, 4.5rem);
+}
+
+.commandIntro > p:last-child {
+  color: #b9b9b9;
+}
+
+.commandList {
+  align-self: center;
+  padding: clamp(4rem, 7vw, 7rem) 3.5vw;
+}
+
+.commandList > div {
+  display: grid;
+  grid-template-columns: minmax(190px, 0.8fr) 1fr;
+  gap: 2rem;
+  padding: 2rem 0;
+  border-top: 1px solid #525252;
+}
+
+.commandList > div:last-child {
+  border-bottom: 1px solid #525252;
+}
+
+.commandList code {
+  color: var(--white);
+  font: inherit;
+  font-size: clamp(0.9rem, 1.5vw, 1.25rem);
+  font-weight: 600;
+  letter-spacing: -0.035em;
+}
+
+.commandList span {
+  color: #b9b9b9;
+  font-size: 0.73rem;
+  line-height: 1.7;
+}
+
+.workflow {
+  display: grid;
+  grid-template-columns: 0.85fr 1.65fr;
+  border-bottom: 2px solid var(--ink);
+}
+
+.workflowTitle {
+  padding: clamp(4rem, 7vw, 7rem) 3.5vw;
+  border-right: 2px solid var(--ink);
+}
+
+.workflowTitle h2 {
+  margin-top: clamp(4rem, 8vw, 7rem);
+}
+
+.workflowSteps {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.workflowSteps li {
+  display: grid;
+  grid-template-columns: 4rem minmax(130px, 0.65fr) 1fr;
+  gap: 1.5rem;
+  align-items: baseline;
+  padding: clamp(2rem, 4vw, 4rem) 3.5vw;
+  border-bottom: 1px solid var(--rule);
+}
+
+.workflowSteps li:last-child {
+  border-bottom: 0;
+}
+
+.workflowSteps span {
+  color: var(--signal);
+  font-size: 0.66rem;
+  font-weight: 700;
+}
+
+.workflowSteps h3 {
+  margin: 0;
+  font-size: clamp(1.2rem, 2vw, 1.8rem);
+  font-weight: 600;
+  letter-spacing: -0.04em;
+}
+
+.workflowSteps p {
+  max-width: 38rem;
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.75rem;
+  line-height: 1.75;
+}
+
+.finalCta {
+  display: grid;
+  grid-template-columns: 0.6fr 1.45fr 0.75fr;
+  gap: 3rem;
+  align-items: end;
+  padding: clamp(5rem, 10vw, 10rem) 3.5vw;
+  background: var(--white);
+  border-bottom: 2px solid var(--ink);
+}
+
+.finalCta > p {
+  align-self: start;
+  color: var(--signal);
+}
+
+.finalCta h2 {
+  max-width: 880px;
+  margin: 0;
+}
+
+.finalCtaLink {
+  justify-self: end;
+  white-space: nowrap;
+}
+
+.footer {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  align-items: center;
+  min-height: 128px;
+  padding: 2rem 3.5vw;
+  background: var(--paper);
+  font-size: 0.64rem;
+}
+
+.footer p {
+  margin: 0;
+  color: var(--muted);
+}
+
+.footer p:last-child {
+  justify-self: end;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .heroCopy > *,
+  .controlMap {
+    animation: enter 680ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .heroCopy > :nth-child(2) {
+    animation-delay: 70ms;
+  }
+
+  .heroCopy > :nth-child(3) {
+    animation-delay: 130ms;
+  }
+
+  .heroCopy > :nth-child(4) {
+    animation-delay: 190ms;
+  }
+
+  .controlMap {
+    animation-delay: 160ms;
+  }
+}
+
+@keyframes enter {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 1040px) {
+  .hero {
+    grid-template-columns: 64px 1.55fr 1fr;
+  }
+
+  .heroCopy {
+    padding-inline: 2.5rem;
+  }
+
+  .hero h1 {
+    font-size: clamp(3.5rem, 7.2vw, 5.7rem);
+  }
+
+  .capabilities,
+  .commandSection,
+  .workflow {
+    grid-template-columns: 0.8fr 1.2fr;
+  }
+
+  .capabilityList {
+    grid-template-columns: 1fr;
+  }
+
+  .finalCta {
+    grid-template-columns: 0.45fr 1.3fr;
+  }
+
+  .finalCtaLink {
+    grid-column: 2;
+    justify-self: start;
+  }
+}
+
+@media (max-width: 760px) {
+  .header {
+    grid-template-columns: 1fr auto;
+    min-height: 72px;
+    padding-inline: 1rem;
+  }
+
+  .nav {
+    display: none;
+  }
+
+  .hero {
+    grid-template-columns: 1fr;
+    min-height: auto;
+  }
+
+  .heroIndex {
+    padding: 1rem;
+    border-right: 0;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .heroCopy {
+    padding: 3.5rem 1rem 4.5rem;
+  }
+
+  .kicker {
+    margin-bottom: 3rem;
+  }
+
+  .hero h1 {
+    max-width: 12ch;
+    font-size: clamp(3rem, 15vw, 5.25rem);
+    line-height: 0.9;
+  }
+
+  .heroText {
+    margin-top: 2.25rem;
+    font-size: 0.9rem;
+  }
+
+  .heroActions {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .primaryCta {
+    width: 100%;
+  }
+
+  .authNote {
+    line-height: 1.7;
+  }
+
+  .controlMap {
+    min-height: 540px;
+    padding: 2.5rem 1rem;
+    border-top: 2px solid var(--ink);
+    border-left: 0;
+  }
+
+  .capabilities,
+  .commandSection,
+  .workflow {
+    grid-template-columns: 1fr;
+  }
+
+  .sectionHeading,
+  .commandIntro,
+  .workflowTitle {
+    padding: 4rem 1rem 4.5rem;
+    border-right: 0;
+    border-bottom: 2px solid var(--ink);
+  }
+
+  .sectionHeading h2,
+  .commandIntro h2,
+  .workflow h2,
+  .finalCta h2 {
+    margin-top: 3.5rem;
+    font-size: clamp(2.5rem, 12vw, 4.2rem);
+  }
+
+  .capabilityList {
+    grid-template-columns: 1fr;
+  }
+
+  .capability {
+    padding: 2.25rem 1rem;
+  }
+
+  .commandIntro {
+    border-color: #525252;
+  }
+
+  .commandList {
+    padding: 2.5rem 1rem 4.5rem;
+  }
+
+  .commandList > div {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .workflowSteps li {
+    grid-template-columns: 2.5rem 1fr;
+    padding: 2.5rem 1rem;
+  }
+
+  .workflowSteps p {
+    grid-column: 2;
+  }
+
+  .finalCta {
+    grid-template-columns: 1fr;
+    gap: 0;
+    padding: 4rem 1rem 5rem;
+  }
+
+  .finalCta h2 {
+    margin-top: 3.5rem;
+  }
+
+  .finalCtaLink {
+    grid-column: 1;
+    justify-self: stretch;
+    margin-top: 2.5rem;
+  }
+
+  .footer {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+    align-items: start;
+    padding: 2.5rem 1rem;
+  }
+
+  .footer p:last-child {
+    justify-self: start;
+  }
+}
+
+@media (max-width: 380px) {
+  .headerCta {
+    font-size: 0.68rem;
+  }
+
+  .hero h1 {
+    font-size: 2.85rem;
+  }
+
+  .primaryCta svg:last-child,
+  .finalCtaLink svg:last-child {
+    margin-left: 0.5rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shell *,
+  .shell *::before,
+  .shell *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
