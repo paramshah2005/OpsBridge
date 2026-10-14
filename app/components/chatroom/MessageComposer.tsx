@@ -1,26 +1,18 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { useState, type FormEvent } from "react";
 import { commandDefinitions } from "../../lib/commands";
 
 type Props = {
-  /** Whether a submission is in flight (disables input + button). */
   sending: boolean;
-  /**
-   * Called when the user submits a non-empty, non-/raise-pr message or
-   * command. Should perform the network request and update parent state.
-   * Must throw on failure so the composer can display the error.
-   */
   onSubmit: (value: string) => Promise<void>;
-  /** Called when the /raise-pr command is triggered via input or the menu. */
   onRaisePrOpen: () => void;
 };
 
 /**
  * MessageComposer
  *
- * Owns: input content, slash-command autocomplete menu, send-error display.
- * Does NOT own: the list of messages, scan state, or feed state.
+ * Owns the draft, slash-command menu, and submission errors.
  */
 export default function MessageComposer({
   sending,
@@ -57,7 +49,6 @@ export default function MessageComposer({
     const value = content.trim();
     if (!value || sending) return;
 
-    // /raise-pr typed directly without going through the menu
     if (value === "/raise-pr") {
       onRaisePrOpen();
       setContent("");
@@ -77,53 +68,32 @@ export default function MessageComposer({
 
   return (
     <>
-      {error && <p className="chat-error">{error}</p>}
-      <form
-        className="composer"
-        style={{ position: "relative" }}
-        onSubmit={handleSubmit}
-      >
-        {/* Slash-command autocomplete menu */}
+      {error && (
+        <p className="chat-error" role="alert">
+          {error}
+        </p>
+      )}
+      <form className="composer" onSubmit={handleSubmit}>
         {commandMenuOpen && commandMatches.length > 0 && (
-          <div
-            role="listbox"
-            style={{
-              position: "absolute",
-              bottom: "calc(100% + 8px)",
-              left: 0,
-              right: 74,
-              background: "#fff",
-              border: "1px solid #ccd3ca",
-              zIndex: 3,
-            }}
-          >
+          <div className="command-menu" id="command-menu" role="listbox">
             {commandMatches.map((command, index) => (
               <button
                 type="button"
+                className={
+                  index === commandIndex
+                    ? "command-option command-option-active"
+                    : "command-option"
+                }
+                role="option"
+                aria-selected={index === commandIndex}
                 key={command.name}
                 onMouseDown={(event) => {
                   event.preventDefault();
                   selectCommand(command.name);
                 }}
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "flex-start",
-                  gap: 4,
-                  width: "100%",
-                  padding: "11px 14px",
-                  border: 0,
-                  borderBottom: "1px solid #edf0ea",
-                  background: index === commandIndex ? "#eff4e8" : "#fff",
-                  color: "#263025",
-                  textAlign: "left",
-                  cursor: "pointer",
-                }}
               >
-                <strong style={{ font: "12px DM Mono" }}>{command.usage}</strong>
-                <span style={{ font: "11px DM Sans", color: "#798279" }}>
-                  {command.description}
-                </span>
+                <strong>{command.usage}</strong>
+                <span>{command.description}</span>
               </button>
             ))}
           </div>
@@ -160,6 +130,13 @@ export default function MessageComposer({
           placeholder="Write a message…"
           maxLength={2000}
           disabled={sending}
+          aria-autocomplete="list"
+          aria-controls={
+            commandMenuOpen && commandMatches.length > 0
+              ? "command-menu"
+              : undefined
+          }
+          aria-expanded={commandMenuOpen && commandMatches.length > 0}
         />
         <button type="submit" disabled={!content.trim() || sending}>
           {sending ? "Sending…" : "Send ↗"}
