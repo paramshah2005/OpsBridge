@@ -4,6 +4,7 @@ import { JetBrains_Mono } from "next/font/google";
 import { useEffect, useState } from "react";
 import { FiArrowLeft } from "react-icons/fi";
 import RaisePrModal from "./RaisePrModal";
+import MergePrModal from "./MergePrModal";
 import RepoStats from "./RepoStats";
 import ActivityFeed from "./chatroom/ActivityFeed";
 import DeploymentPanel from "./chatroom/DeploymentPanel";
@@ -89,6 +90,7 @@ export default function ChatRoom({
   login: string;
 }) {
   const [raisePrOpen, setRaisePrOpen] = useState(false);
+  const [mergePrOpen, setMergePrOpen] = useState(false);
   const navigation = useAutoHidingNavigation();
 
   // ── Custom Hooks for State & Data-Fetching ─────────────────────────────────
@@ -129,6 +131,12 @@ export default function ChatRoom({
         repoId={repoId}
         open={raisePrOpen}
         onClose={() => setRaisePrOpen(false)}
+        onSubmit={submitContent}
+      />
+      <MergePrModal
+        repoId={repoId}
+        open={mergePrOpen}
+        onClose={() => setMergePrOpen(false)}
         onSubmit={submitContent}
       />
 
@@ -195,6 +203,7 @@ export default function ChatRoom({
             sending={sending}
             onSubmit={submitContent}
             onRaisePrOpen={() => setRaisePrOpen(true)}
+            onMergeOpen={() => setMergePrOpen(true)}
           />
         </section>
 

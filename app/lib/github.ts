@@ -56,6 +56,9 @@ export type GitHubCommitStatus = {
   description: string | null;
 };
 
+export type PullRequestCheckStatus = "pass" | "fail" | "pending";
+export type PullRequestCheck = { name: string; status: PullRequestCheckStatus; url: string | null; details: string | null };
+
 export type GitHubUser = {
   login: string;
   name: string | null;
@@ -118,6 +121,32 @@ export async function getCommitChecks(token: string, repository: GitHubRepositor
   const checksData = (await checksResponse.json()) as { check_runs?: GitHubCheckRun[] };
   const statusesData = (await statusesResponse.json()) as { statuses?: GitHubCommitStatus[] };
   return { checkRuns: checksData.check_runs || [], statuses: statusesData.statuses || [] };
+}
+
+export async function getPullRequestChecks(token: string, repository: GitHubRepository, ref: string) {
+  const { checkRuns, statuses } = await getCommitChecks(token, repository, ref);
+  const checks: PullRequestCheck[] = checkRuns.map((check) => {
+    let status: PullRequestCheckStatus = "pending";
+    if (check.status === "completed") {
+      status = ["success", "neutral", "skipped"].includes(check.conclusion || "") ? "pass" : "fail";
+    }
+    return { name: check.name, status, url: check.html_url, details: check.conclusion || check.status };
+  });
+  for (const check of statuses) {
+    const status: PullRequestCheckStatus = check.state === "success" ? "pass" :
+      check.state === "failure" || check.state === "error" ? "fail" : "pending";
+    checks.push({ name: check.context, status, url: check.target_url, details: check.description });
+  }
+  return checks;
+}
+
+export async function getBranchProtection(token: string, repository: GitHubRepository, branch: string) {
+  const response = await fetch(`https://api.github.com/repos/${encodeURIComponent(repository.owner.login)}/${encodeURIComponent(repository.name)}/branches/${encodeURIComponent(branch)}`, {
+    headers: headers(token), cache: "no-store",
+  });
+  if (!response.ok) throw await githubError(response, "GitHub could not load base branch protection.");
+  const data = await response.json() as { protected?: boolean };
+  return data.protected === true;
 }
 
 export async function getAuthenticatedUser(token: string) {
