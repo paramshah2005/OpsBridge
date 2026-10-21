@@ -8,6 +8,7 @@ export const commandDefinitions: CommandDefinition[] = [
   { name: "branch", usage: "/branch", description: "List the repository's branches." },
   { name: "prs", usage: "/prs", description: "List open pull requests." },
   { name: "pr", usage: "/pr <number>", description: "Show details for a pull request." },
+  { name: "merge", usage: "/merge <number>", description: "Merge an open pull request." },
   { name: "checks", usage: "/checks <number>", description: "Show checks for a pull request." },
   { name: "whoami", usage: "/whoami", description: "Show your GitHub identity and repository access." },
   { name: "help", usage: "/help", description: "List available commands." },
