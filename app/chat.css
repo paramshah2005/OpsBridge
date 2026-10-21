@@ -1221,6 +1221,174 @@
   outline-offset: 2px;
 }
 
+.merge-pr-modal {
+  width: min(720px, 100%);
+}
+
+.merge-pr-content {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.merge-pr-list,
+.merge-pr-checks {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.merge-pr-list h3,
+.merge-pr-checks h3 {
+  margin: 0;
+  color: var(--chat-ink);
+  font-size: 0.66rem;
+  font-weight: 700;
+}
+
+.merge-pr-list {
+  max-height: 210px;
+  overflow-y: auto;
+}
+
+.merge-pr-choice {
+  display: grid;
+  gap: 0.3rem;
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid var(--chat-ink);
+  background: transparent;
+  color: var(--chat-ink);
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+}
+
+.merge-pr-choice strong,
+.merge-pr-choice span {
+  overflow-wrap: anywhere;
+}
+
+.merge-pr-choice strong {
+  font-size: 0.62rem;
+}
+
+.merge-pr-choice span,
+.merge-pr-muted,
+.merge-pr-branches {
+  margin: 0;
+  color: var(--chat-muted);
+  font-size: 0.57rem;
+  line-height: 1.5;
+}
+
+.merge-pr-choice-selected,
+.merge-pr-choice:hover {
+  border-color: var(--chat-signal);
+  background: #fff0f2;
+}
+
+.merge-pr-checks {
+  padding-top: 0.9rem;
+  border-top: 1px solid var(--chat-ink);
+}
+
+.merge-pr-checks-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.merge-pr-refresh {
+  padding: 0.35rem 0.55rem;
+  border: 1px solid var(--chat-ink);
+  background: transparent;
+  color: var(--chat-ink);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.55rem;
+}
+
+.merge-pr-refresh:disabled {
+  cursor: wait;
+  opacity: 0.5;
+}
+
+.merge-pr-protection {
+  margin: 0;
+  padding: 0.65rem 0.75rem;
+  border-left: 3px solid #a06b00;
+  background: #fff4d9;
+  color: #654500;
+  font-size: 0.57rem;
+  line-height: 1.5;
+}
+
+.merge-pr-branches {
+  color: var(--chat-ink);
+}
+
+.merge-pr-check-list {
+  display: grid;
+  gap: 0.5rem;
+  max-height: 180px;
+  overflow-y: auto;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.merge-pr-check-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  padding: 0.6rem;
+  border: 1px solid #d8d2cb;
+}
+
+.merge-pr-status {
+  flex: 0 0 4.1rem;
+  font-size: 0.55rem;
+  font-weight: 700;
+}
+
+.merge-pr-status-pass { color: #176b39; }
+.merge-pr-status-fail { color: #a10e2b; }
+.merge-pr-status-pending { color: #8a5a00; }
+
+.merge-pr-check-name {
+  min-width: 0;
+  color: var(--chat-ink);
+  font-size: 0.57rem;
+  overflow-wrap: anywhere;
+}
+
+.merge-pr-check-name a {
+  color: inherit;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+}
+
+.merge-pr-check-name small {
+  display: block;
+  margin-top: 0.2rem;
+  color: var(--chat-muted);
+  font-size: 0.52rem;
+}
+
+.merge-confirm-backdrop {
+  z-index: 110;
+}
+
+.merge-confirm-modal {
+  width: min(460px, 100%);
+}
+
+.merge-confirm-modal > p {
+  color: var(--chat-ink);
+  font-size: 0.62rem;
+  line-height: 1.6;
+}
+
 .command-modal-error {
   margin: 0;
   padding: 0.85rem;

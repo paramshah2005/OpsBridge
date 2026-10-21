@@ -7,6 +7,7 @@ type Props = {
   sending: boolean;
   onSubmit: (value: string) => Promise<void>;
   onRaisePrOpen: () => void;
+  onMergeOpen: () => void;
 };
 
 /**
@@ -18,6 +19,7 @@ export default function MessageComposer({
   sending,
   onSubmit,
   onRaisePrOpen,
+  onMergeOpen,
 }: Props) {
   const [content, setContent] = useState("");
   const [commandMenuOpen, setCommandMenuOpen] = useState(false);
@@ -40,6 +42,12 @@ export default function MessageComposer({
       onRaisePrOpen();
       return;
     }
+    if (name === "merge") {
+      setContent("");
+      setCommandMenuOpen(false);
+      onMergeOpen();
+      return;
+    }
     setContent(`${command.usage} `);
     setCommandMenuOpen(false);
   }
@@ -51,6 +59,12 @@ export default function MessageComposer({
 
     if (value === "/raise-pr") {
       onRaisePrOpen();
+      setContent("");
+      setCommandMenuOpen(false);
+      return;
+    }
+    if (value === "/merge") {
+      onMergeOpen();
       setContent("");
       setCommandMenuOpen(false);
       return;
