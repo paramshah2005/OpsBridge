@@ -8,6 +8,7 @@ type Props = {
   onSubmit: (value: string) => Promise<void>;
   onRaisePrOpen: () => void;
   onMergeOpen: () => void;
+  onDeletePrOpen: () => void;
 };
 
 /**
@@ -20,6 +21,7 @@ export default function MessageComposer({
   onSubmit,
   onRaisePrOpen,
   onMergeOpen,
+  onDeletePrOpen,
 }: Props) {
   const [content, setContent] = useState("");
   const [commandMenuOpen, setCommandMenuOpen] = useState(false);
@@ -48,6 +50,12 @@ export default function MessageComposer({
       onMergeOpen();
       return;
     }
+    if (name === "delete-pr") {
+      setContent("");
+      setCommandMenuOpen(false);
+      onDeletePrOpen();
+      return;
+    }
     setContent(`${command.usage} `);
     setCommandMenuOpen(false);
   }
@@ -65,6 +73,12 @@ export default function MessageComposer({
     }
     if (value === "/merge") {
       onMergeOpen();
+      setContent("");
+      setCommandMenuOpen(false);
+      return;
+    }
+    if (value === "/delete-pr") {
+      onDeletePrOpen();
       setContent("");
       setCommandMenuOpen(false);
       return;
