@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import { createPullRequest, dispatchWorkflow, getAuthenticatedUser, getBranches, getCommitChecks, getContributors, getGitHubRepository, getLatestCommit, getLatestWorkflowRuns, getOpenPullRequests, getPullRequest, getRecentlyMergedPullRequest, getRepositoryStats, type GitHubCheckRun, type GitHubCommitStatus, type GitHubRepository } from "../../../../lib/github";
+import { createPullRequest, dispatchWorkflow, getAuthenticatedUser, getBranches, getCommitChecks, getContributors, getGitHubRepository, getLatestCommit, getLatestWorkflowRuns, getOpenPullRequests, getPullRequest, getRecentlyMergedPullRequest, getRepositoryStats, mergePullRequest, type GitHubCheckRun, type GitHubCommitStatus, type GitHubRepository } from "../../../../lib/github";
 import { commandDefinitions, helpText, parseCommand } from "../../../../lib/commands";
 import { broadcastToRoom } from "../../../../lib/realtime";
 import { decryptAccessToken, getSession } from "../../../../lib/session";
@@ -136,6 +136,21 @@ export async function POST(request: Request, { params }: Params) {
             `Updated: ${pullRequest.updated_at ? new Date(pullRequest.updated_at).toLocaleString() : "unknown"}`,
             pullRequest.html_url,
           ].join("\n");
+        }
+      }
+    } else if (command.name === "merge") {
+      const number = pullNumber(command.args);
+      if (!number) result = `Usage: ${definition.usage}`;
+      else {
+        const pullRequest = await getPullRequest(token, repository, number);
+        if (!pullRequest) result = `Pull request #${number} was not found or is not accessible.`;
+        else if (pullRequest.merged || pullRequest.merged_at) result = `Pull request #${number} is already merged.`;
+        else if (pullRequest.state !== "open") result = `Pull request #${number} is not open.`;
+        else {
+          const merge = await mergePullRequest(token, repository, number);
+          result = merge.merged
+            ? `Pull request #${number} merged: ${pullRequest.title}\n${pullRequest.html_url}`
+            : `GitHub did not merge pull request #${number}: ${merge.message}`;
         }
       }
     } else if (command.name === "checks") {

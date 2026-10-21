@@ -204,6 +204,16 @@ export async function createPullRequest(token: string, repository: GitHubReposit
   return (await response.json()) as { number: number; html_url: string; title: string };
 }
 
+export async function mergePullRequest(token: string, repository: GitHubRepository, pullNumber: number) {
+  const response = await fetch(`https://api.github.com/repos/${encodeURIComponent(repository.owner.login)}/${encodeURIComponent(repository.name)}/pulls/${pullNumber}/merge`, {
+    method: "PUT",
+    headers: { ...headers(token), "Content-Type": "application/json" },
+    body: JSON.stringify({}),
+  });
+  if (!response.ok) throw await githubError(response, "GitHub could not merge the pull request.");
+  return (await response.json()) as { merged: boolean; sha: string; message: string };
+}
+
 export type GitHubArtifact = { id: number; name: string };
 
 export async function getWorkflowRunArtifacts(token: string, owner: string, repo: string, runId: number) {
