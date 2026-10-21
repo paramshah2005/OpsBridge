@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { FiArrowLeft } from "react-icons/fi";
 import RaisePrModal from "./RaisePrModal";
 import MergePrModal from "./MergePrModal";
+import DeletePrModal from "./DeletePrModal";
 import RepoStats from "./RepoStats";
 import ActivityFeed from "./chatroom/ActivityFeed";
 import DeploymentPanel from "./chatroom/DeploymentPanel";
@@ -91,6 +92,7 @@ export default function ChatRoom({
 }) {
   const [raisePrOpen, setRaisePrOpen] = useState(false);
   const [mergePrOpen, setMergePrOpen] = useState(false);
+  const [deletePrOpen, setDeletePrOpen] = useState(false);
   const navigation = useAutoHidingNavigation();
 
   // ── Custom Hooks for State & Data-Fetching ─────────────────────────────────
@@ -137,6 +139,12 @@ export default function ChatRoom({
         repoId={repoId}
         open={mergePrOpen}
         onClose={() => setMergePrOpen(false)}
+        onSubmit={submitContent}
+      />
+      <DeletePrModal
+        repoId={repoId}
+        open={deletePrOpen}
+        onClose={() => setDeletePrOpen(false)}
         onSubmit={submitContent}
       />
 
@@ -204,6 +212,7 @@ export default function ChatRoom({
             onSubmit={submitContent}
             onRaisePrOpen={() => setRaisePrOpen(true)}
             onMergeOpen={() => setMergePrOpen(true)}
+            onDeletePrOpen={() => setDeletePrOpen(true)}
           />
         </section>
 

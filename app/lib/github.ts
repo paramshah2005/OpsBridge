@@ -243,6 +243,16 @@ export async function mergePullRequest(token: string, repository: GitHubReposito
   return (await response.json()) as { merged: boolean; sha: string; message: string };
 }
 
+export async function closePullRequest(token: string, repository: GitHubRepository, pullNumber: number) {
+  const response = await fetch(`https://api.github.com/repos/${encodeURIComponent(repository.owner.login)}/${encodeURIComponent(repository.name)}/pulls/${pullNumber}`, {
+    method: "PATCH",
+    headers: { ...headers(token), "Content-Type": "application/json" },
+    body: JSON.stringify({ state: "closed" }),
+  });
+  if (!response.ok) throw await githubError(response, "GitHub could not close the pull request.");
+  return (await response.json()) as { number: number; title: string; html_url: string; state: string; merged: boolean };
+}
+
 export type GitHubArtifact = { id: number; name: string };
 
 export async function getWorkflowRunArtifacts(token: string, owner: string, repo: string, runId: number) {

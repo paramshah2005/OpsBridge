@@ -153,6 +153,7 @@ Commands are parsed deterministically and return structured results in the repos
 /rerun-full-pipeline
 /raise-pr <head> <base> "<title>"
 /merge <number>
+/delete-pr <number>
 /status
 /help
 ```
@@ -160,6 +161,7 @@ Commands are parsed deterministically and return structured results in the repos
 - Scan commands trigger the corresponding GitHub Actions workflow through the GitHub API.
 - `/raise-pr` creates a pull request through the GitHub API.
 - `/merge` merges an open pull request through the GitHub API.
+- `/delete-pr` closes an open pull request through the GitHub API without deleting its branches.
 - `/status` retrieves the current pull-request and security-gate state.
 - Every command execution is saved and produces a visible result message.
 
