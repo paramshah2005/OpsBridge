@@ -6,3 +6,5 @@ out/
 .vercel/
 npm-debug.log*
 README_dev.md
+output/
+tmp/
