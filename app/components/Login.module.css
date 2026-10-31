@@ -52,7 +52,7 @@
   align-items: center;
   justify-content: center;
   gap: clamp(1.5rem, 3vw, 3rem);
-  font-size: 0.72rem;
+  font-size: 0.8rem;
   font-weight: 500;
   letter-spacing: 0.04em;
 }
@@ -74,7 +74,7 @@
 .headerCta {
   justify-self: end;
   gap: 0.55rem;
-  font-size: 0.76rem;
+  font-size: 0.85rem;
   font-weight: 600;
 }
 
@@ -105,7 +105,7 @@
 .inverseNumber,
 .finalCta > p {
   margin: 0;
-  font-size: 0.68rem;
+  font-size: 0.78rem;
   font-weight: 600;
   letter-spacing: 0.1em;
   line-height: 1.5;
@@ -178,7 +178,7 @@
 
 .authNote {
   color: var(--muted);
-  font-size: 0.62rem;
+  font-size: 0.78rem;
   line-height: 1.6;
 }
 
@@ -199,7 +199,7 @@
   justify-content: space-between;
   gap: 1rem;
   color: var(--muted);
-  font-size: 0.56rem;
+  font-size: 0.85rem;
   font-weight: 600;
   letter-spacing: 0.1em;
 }
@@ -227,7 +227,7 @@
 
 .mapNumber {
   align-self: start;
-  font-size: 0.62rem;
+  font-size: 0.78rem;
   font-weight: 700;
 }
 
@@ -245,7 +245,7 @@
 
 .mapStage div span {
   color: var(--muted);
-  font-size: 0.63rem;
+  font-size: 0.8rem;
   line-height: 1.5;
 }
 
@@ -325,7 +325,7 @@
 
 .capability > span {
   color: var(--signal);
-  font-size: 0.66rem;
+  font-size: 0.78rem;
   font-weight: 700;
 }
 
@@ -341,7 +341,7 @@
   max-width: 31rem;
   margin: 1.8rem 0 0;
   color: var(--muted);
-  font-size: 0.76rem;
+  font-size: 0.85rem;
   line-height: 1.75;
 }
 
@@ -398,7 +398,7 @@
 
 .commandList span {
   color: #b9b9b9;
-  font-size: 0.73rem;
+  font-size: 0.85rem;
   line-height: 1.7;
 }
 
@@ -438,7 +438,7 @@
 
 .workflowSteps span {
   color: var(--signal);
-  font-size: 0.66rem;
+  font-size: 0.78rem;
   font-weight: 700;
 }
 
@@ -453,7 +453,7 @@
   max-width: 38rem;
   margin: 0;
   color: var(--muted);
-  font-size: 0.75rem;
+  font-size: 0.85rem;
   line-height: 1.75;
 }
 
@@ -489,7 +489,7 @@
   min-height: 128px;
   padding: 2rem 3.5vw;
   background: var(--paper);
-  font-size: 0.64rem;
+  font-size: 0.78rem;
 }
 
 .footer p {
@@ -623,7 +623,7 @@
   }
 
   .controlMap {
-    min-height: 540px;
+    min-height: 0;
     padding: 2.5rem 1rem;
     border-top: 2px solid var(--ink);
     border-left: 0;
@@ -711,7 +711,7 @@
 
 @media (max-width: 380px) {
   .headerCta {
-    font-size: 0.68rem;
+    font-size: 0.78rem;
   }
 
   .hero h1 {
@@ -731,5 +731,34 @@
     scroll-behavior: auto !important;
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
+  }
+}
+
+/* Landing-page refinement: legible small text and stable narrow layouts. */
+@media (max-width: 760px) {
+  .controlMap {
+    min-height: 0;
+    padding-block: 2rem;
+  }
+
+  .mapConnector {
+    height: 2rem;
+  }
+
+  .heroCopy {
+    padding-block: 3rem 3.5rem;
+  }
+
+  .sectionHeading h2,
+  .commandIntro h2,
+  .workflow h2,
+  .finalCta h2 {
+    overflow-wrap: anywhere;
+  }
+}
+
+@media (max-width: 380px) {
+  .hero h1 {
+    font-size: clamp(2.5rem, 13vw, 2.85rem);
   }
 }
